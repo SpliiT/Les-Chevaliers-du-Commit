@@ -3,101 +3,74 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quête de Kaamelott - La Recherche du Trésor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Quête de Kaamelott | Trésor Perdu</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=IM+Fell+English+SC&display=swap"
+        rel="stylesheet">
+    <meta name="description" content="Une quête interactive pour retrouver le trésor perdu de Kaamelott.">
+    <meta property="og:title" content="Quête de Kaamelott | Trésor Perdu">
+    <meta property="og:image" content="https://via.placeholder.com/1200x675/2D1B0E/FFD700?text=Quête+de+Kaamelott">
 </head>
 
 <body>
     <div class="container">
-        <h1>⚔️ Quête de Kaamelott ⚔️</h1>
-
+        <h1>Quête de Kaamelott</h1>
         <div class="quest-info">
-            <p><strong>Mission :</strong> Aider le roi Arthur à trouver l'entrée du labyrinthe, puis le guider vers le
-                trésor mystérieux de la Dame du Lac.</p>
+            <p><strong>Mission Royale :</strong> Trouvez le trésor caché dans le labyrinthe de la Dame du Lac.</p>
         </div>
-
         <div class="phase-selector">
-            <button class="phase-btn active" onclick="showPhase('map')">🗺️ Carte du Royaume</button>
-            <button class="phase-btn" onclick="showPhase('maze')">🏰 Labyrinthe Mystérieux</button>
+            <button class="phase-btn active" onclick="showPhase('map')">🗺️ Carte</button>
+            <button class="phase-btn" onclick="showPhase('maze')">🏰 Labyrinthe</button>
         </div>
-
-        <div id="map-container" class="active">
+        <div id="map-container" class="phase-content active">
             <div id="map"></div>
             <div class="controls">
-                <button class="control-btn" onclick="findShortestPath()">🧭 Calculer Route Optimale</button>
-                <button class="control-btn" onclick="clearPath()">🧹 Effacer le Chemin</button>
-                <button class="control-btn" onclick="addWaypoint()">📍 Ajouter Point de Passage</button>
-                <button class="control-btn" onclick="centerOnKaamelott()">🏰 Centrer sur Kaamelott</button>
+                <button class="control-btn" onclick="findShortestPath()">🧭 Route</button>
+                <button class="control-btn" onclick="clearPath()">🧹 Effacer</button>
+                <button class="control-btn" onclick="addWaypoint()">📍 Ajouter</button>
+                <button class="control-btn" onclick="clearWaypoints()">🔄 Réinitialiser</button>
             </div>
             <div class="info-panel">
-                <div id="map-status" class="status">Cliquez sur "Calculer Route Optimale" pour commencer la quête avec
-                    Leaflet Routing !</div>
+                <div id="map-status" class="status">Prêt pour l'aventure ?</div>
                 <div class="legend">
                     <div class="legend-item">
-                        <div class="legend-color" style="background: #32CD32;"></div>
+                        <div class="legend-color" style="background: linear-gradient(45deg, #32CD32, #228B22);"></div>
                         <span>Kaamelott</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-color" style="background: #FF6B6B;"></div>
-                        <span>Entrée du Labyrinthe</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #FFD700;"></div>
-                        <span>Points de Passage</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #4169E1; border: 2px dashed white;"></div>
-                        <span>Route Leaflet (vraies routes)</span>
+                        <div class="legend-color" style="background: linear-gradient(45deg, #FF6B6B, #FF4444);"></div>
+                        <span>Labyrinthe</span>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div id="maze-container">
+        <div id="maze-container" class="phase-content">
             <div id="maze"></div>
             <div class="controls">
-                <button class="control-btn" onclick="generateMaze()">🏗️ Nouveau Labyrinthe</button>
-                <button class="control-btn" onclick="solveMaze()">🧭 Résoudre le Labyrinthe</button>
-                <button class="control-btn" onclick="startArthurJourney()">👑 Guider Arthur</button>
-                <button class="control-btn" onclick="resetMaze()">🔄 Recommencer</button>
+                <button class="control-btn" onclick="generateMaze()">🏗️ Nouveau</button>
+                <button class="control-btn" onclick="solveMaze()">🧭 Résoudre</button>
             </div>
             <div class="info-panel">
-                <div id="maze-status" class="status">Générez un nouveau labyrinthe pour commencer l'aventure !</div>
+                <div id="maze-status" class="status">Générez un labyrinthe !</div>
                 <div class="legend">
                     <div class="legend-item">
-                        <div class="legend-color" style="background: #32CD32;"></div>
-                        <span>Entrée</span>
+                        <div class="legend-color" style="background: var(--emerald);"></div><span>Entrée</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-color" style="background: #FFD700;"></div>
-                        <span>Trésor</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #4169E1;"></div>
-                        <span>Arthur</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #FF6B6B;"></div>
-                        <span>Chemin Solution</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #2c1810;"></div>
-                        <span>Mur</span>
+                        <div class="legend-color" style="background: var(--gold);"></div><span>Trésor</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <script src="script.js"></script>
-    <script src="labyrinthe.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-    <script>
-
-    </script>
 </body>
 
 </html>
