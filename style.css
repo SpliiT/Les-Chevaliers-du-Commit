@@ -237,3 +237,12 @@ h1 {
 .error {
   color: #ff6b6b;
 }
+.icon {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+.icon img {
+  width: 30px;
+  height: auto;
+}
