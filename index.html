@@ -5,72 +5,117 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Quête de Kaamelott | Trésor Perdu</title>
-    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=IM+Fell+English+SC&display=swap"
         rel="stylesheet">
-    <meta name="description" content="Une quête interactive pour retrouver le trésor perdu de Kaamelott.">
-    <meta property="og:title" content="Quête de Kaamelott | Trésor Perdu">
-    <meta property="og:image" content="https://via.placeholder.com/1200x675/2D1B0E/FFD700?text=Quête+de+Kaamelott">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <div class="container">
-        <h1>Quête de Kaamelott</h1>
-        <div class="quest-info">
-            <p><strong>Mission Royale :</strong> Trouvez le trésor caché dans le labyrinthe de la Dame du Lac.</p>
+    <div class="app-container">
+        <!-- Panneau latéral -->
+        <div class="sidebar">
+            <button class="sidebar-btn active" onclick="showPhase('map')">
+                <i class="fas fa-map"></i>
+            </button>
+            <button class="sidebar-btn" onclick="showPhase('maze')">
+                <i class="fas fa-dungeon"></i>
+            </button>
         </div>
-        <div class="phase-selector">
-            <button class="phase-btn active" onclick="showPhase('map')">🗺️ Carte</button>
-            <button class="phase-btn" onclick="showPhase('maze')">🏰 Labyrinthe</button>
-        </div>
-        <div id="map-container" class="phase-content active">
-            <div id="map"></div>
-            <div class="controls">
-                <button class="control-btn" onclick="findShortestPath()">🧭 Route</button>
-                <button class="control-btn" onclick="clearPath()">🧹 Effacer</button>
-                <button class="control-btn" onclick="addWaypoint()">📍 Ajouter</button>
-                <button class="control-btn" onclick="clearWaypoints()">🔄 Réinitialiser</button>
-            </div>
-            <div class="info-panel">
-                <div id="map-status" class="status">Prêt pour l'aventure ?</div>
-                <div class="legend">
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: linear-gradient(45deg, #32CD32, #228B22);"></div>
-                        <span>Kaamelott</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: linear-gradient(45deg, #FF6B6B, #FF4444);"></div>
-                        <span>Labyrinthe</span>
+
+        <!-- Contenu principal -->
+        <div class="main-content">
+            <!-- Phase Carte -->
+            <div id="map-container" class="phase-content active">
+                <div id="map"></div>
+
+                <!-- Menu flottant -->
+                <div class="floating-menu">
+                    <button class="menu-btn" onclick="findShortestPath()" title="Calculer la route">
+                        <i class="fas fa-route"></i>
+                    </button>
+                    <button class="menu-btn" onclick="clearPath()" title="Effacer la route">
+                        <i class="fas fa-eraser"></i>
+                    </button>
+                    <button class="menu-btn" onclick="addWaypoint()" title="Ajouter un point">
+                        <i class="fas fa-map-pin"></i>
+                    </button>
+                    <button class="menu-btn" onclick="clearWaypoints()" title="Réinitialiser">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                </div>
+
+                <!-- Infos et légende -->
+                <div class="info-overlay">
+                    <div id="map-status" class="status">Clic droit pour ajouter un waypoint</div>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: var(--emerald);"></div>
+                            <span>Kaamelott</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: var(--ruby);"></div>
+                            <span>Château</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: var(--gold);"></div>
+                            <span>Waypoints</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div id="maze-container" class="phase-content">
-            <div id="maze"></div>
-            <div class="controls">
-                <button class="control-btn" onclick="generateMaze()">🏗️ Nouveau</button>
-                <button class="control-btn" onclick="solveMaze()">🧭 Résoudre</button>
-            </div>
-            <div class="info-panel">
-                <div id="maze-status" class="status">Générez un labyrinthe !</div>
-                <div class="legend">
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: var(--emerald);"></div><span>Entrée</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: var(--gold);"></div><span>Trésor</span>
+
+            <!-- Phase Labyrinthe -->
+            <div id="maze-container" class="phase-content">
+                <div id="maze"></div>
+
+                <div class="floating-menu">
+                    <button class="menu-btn" onclick="generateMaze()" title="Nouveau labyrinthe">
+                        <i class="fas fa-random"></i>
+                    </button>
+                    <button class="menu-btn" onclick="solveMaze()" title="Résoudre">
+                        <i class="fas fa-puzzle-piece"></i>
+                    </button>
+                    <button class="menu-btn" onclick="startArthurJourney()" title="Animation Arthur">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button class="menu-btn" onclick="resetMaze()" title="Reset">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                </div>
+
+                <div class="info-overlay">
+                    <div id="maze-status" class="status">Générez un labyrinthe !</div>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: var(--emerald);"></div>
+                            <span>Entrée</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: var(--gold);"></div>
+                            <span>Trésor</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #4169e1;"></div>
+                            <span>Arthur</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: var(--ruby);"></div>
+                            <span>Solution</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <script src="script.js"></script>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <script src="script.js"></script>
 </body>
 
 </html>

@@ -13,6 +13,7 @@ let arthurPosition = null; // Position actuelle d'Arthur dans le labyrinthe
 let solutionPath = []; // Chemin solution du labyrinthe
 let appData = null; // Données chargées depuis le fichier JSON
 let waypointCircles = []; // Liste des cercles des points de passage
+let commercesPau = [];
 
 // =============================================
 // Charger les données depuis le fichier data.json
@@ -34,9 +35,32 @@ async function loadData() {
 }
 
 // =============================================
+// Charger les commerces de Pau
+// =============================================
+async function loadCommercesPau() {
+  try {
+    const response = await fetch("pau.json");
+    if (!response.ok) throw new Error("Erreur de chargement");
+    const data = await response.json();
+
+    // CORRECTION: Adapter la structure du JSON pau.json
+    commercesPau = data.filter((item) => {
+      const lat = item.geo_point_2d.lat;
+      const lng = item.geo_point_2d.lon;
+      return lat > 43.2 && lat < 43.4 && lng > -0.45 && lng < -0.3;
+    });
+    console.log("Commerces de Pau chargés :", commercesPau.length);
+  } catch (error) {
+    console.error("Erreur :", error);
+    updateStatus("map", "Impossible de charger les commerces de Pau.", "error");
+  }
+}
+
+// =============================================
 // Initialisation de l'application au chargement de la page
 // =============================================
 window.onload = async function () {
+  await loadCommercesPau(); // Charger les commerces AVANT
   appData = await loadData();
   if (appData) {
     initMap(); // Initialiser la carte
@@ -52,9 +76,44 @@ window.onload = async function () {
 function initMap() {
   // Récupérer les paramètres de la carte depuis appData
   const { center, zoom, tileLayers } = appData.mapSettings;
-
   // Créer la carte centrée sur les coordonnées spécifiées
-  map = L.map("map").setView(center, zoom);
+  map = L.map("map", {
+    center: center,
+    zoom: zoom,
+    attributionControl: false,
+    minZoom: 13, // Empêche de dézoomer au-delà de ce niveau
+    maxZoom: 17, // Empêche de zoomer au-delà de ce niveau
+  });
+
+  // CORRECTION: Un seul gestionnaire d'événement contextmenu
+  map.on("contextmenu", function (e) {
+    e.originalEvent.preventDefault(); // Désactive le menu contextuel
+
+    const { lat, lng } = e.latlng;
+    const { commerce: nearest, distance } = findNearestCommerce(lat, lng);
+    const MAX_DISTANCE = 500; // Seuil en mètres
+
+    if (nearest && distance <= MAX_DISTANCE) {
+      addWaypointAt(
+        nearest.coords[0],
+        nearest.coords[1],
+        nearest.name,
+        nearest.icon,
+        waypoints.length + 1
+      );
+      updateStatus(
+        "map",
+        `✅ Waypoint ajouté : ${nearest.name} (${distance.toFixed(0)}m)`,
+        "success"
+      );
+    } else {
+      updateStatus(
+        "map",
+        `❌ Aucun commerce trouvé à moins de ${MAX_DISTANCE}m.`,
+        "error"
+      );
+    }
+  });
 
   // Ajouter les couches de tuiles (ex: OpenStreetMap)
   const layers = {};
@@ -68,9 +127,6 @@ function initMap() {
       tileLayer.addTo(map); // Ajouter la première couche par défaut
     }
   });
-
-  // Ajouter un contrôleur pour changer de couche
-  L.control.layers(layers).addTo(map);
 
   // Ajouter les marqueurs principaux (Kaamelott et Labyrinthe)
   appData.mainLocations.forEach((location) => {
@@ -110,6 +166,75 @@ function initMap() {
       index + 1
     );
   });
+}
+
+// =============================================
+// Obtenir l'icône selon le type de commerce
+// =============================================
+function getCommerceIcon(types) {
+  if (!types || types.length === 0) return "🏪";
+
+  // Prendre le premier type pour déterminer l'icône
+  const primaryType = types[0];
+
+  const iconMap = {
+    clothes: "👕",
+    restaurant: "🍽️",
+    fast_food: "🍔",
+    hairdresser: "💇",
+    bar: "🍺",
+    bank: "🏦",
+    beauty: "💄",
+    pharmacy: "💊",
+    jewelry: "💎",
+    tattoo: "🔖",
+    florist: "🌸",
+    pub: "🍻",
+    "e-cigarette": "💨",
+    tobacco: "🚬",
+    bakery: "🥖",
+    convenience: "🛒",
+    cafe: "☕",
+    car_repair: "🔧",
+    car: "🚗",
+    supermarket: "🛍️",
+    shoes: "👟",
+    car_wash: "🧽",
+    optician: "👓",
+  };
+
+  return iconMap[primaryType] || "🏪";
+}
+
+// =============================================
+// Trouver le commerce le plus proche
+// =============================================
+function findNearestCommerce(lat, lng) {
+  const clickCoords = [lat, lng];
+  let nearest = null;
+  let minDistance = Infinity;
+
+  commercesPau.forEach((item) => {
+    // CORRECTION: Adapter à la structure du JSON pau.json
+    const commerceLat = item.geo_point_2d.lat;
+    const commerceLng = item.geo_point_2d.lon;
+    const distance =
+      calculateDistance(clickCoords, [commerceLat, commerceLng]) * 1000; // Convertir en mètres
+
+    if (distance < minDistance) {
+      minDistance = distance;
+      const commerceIcon = getCommerceIcon(item.type);
+      nearest = {
+        name: item.name || "Commerce inconnu",
+        coords: [commerceLat, commerceLng],
+        type: item.type ? item.type.join(", ") : "inconnu",
+        icon: commerceIcon,
+        address: item.address || "Adresse inconnue",
+      };
+    }
+  });
+
+  return { commerce: nearest, distance: minDistance };
 }
 
 // =============================================
@@ -157,7 +282,24 @@ function addWaypoint() {
 // Ajouter un point de passage à la carte
 // =============================================
 function addWaypointAt(lat, lng, name, emoji, index) {
-  const waypoint = appData.waypoints.find((wp) => wp.name === name);
+  // CORRECTION: Créer un waypoint générique si pas trouvé dans appData
+  let waypoint = appData.waypoints.find((wp) => wp.name === name);
+
+  if (!waypoint) {
+    // Créer un waypoint générique pour les commerces
+    waypoint = {
+      icon: {
+        className: "waypoint-marker",
+        html: `<div class="marker-content">${emoji}</div>`,
+        iconSize: [30, 30],
+        iconAnchor: [15, 15],
+      },
+      popupContent: `<b>${emoji} ${name}</b><br/>Point de passage #${index}<br/>📍 ${lat.toFixed(
+        4
+      )}, ${lng.toFixed(4)}`,
+    };
+  }
+
   const waypointIcon = L.divIcon(waypoint.icon);
   const marker = L.marker([lat, lng], { icon: waypointIcon })
     .addTo(map)
@@ -191,6 +333,7 @@ function addWaypointAt(lat, lng, name, emoji, index) {
   // Stocker le cercle dans la liste globale
   waypointCircles.push(circle);
 }
+
 // =============================================
 // Effacer tous les waypoints de la carte
 // =============================================
@@ -285,6 +428,7 @@ function findShortestPath() {
     // Créer le contrôle de routage Leaflet
     routingControl = L.Routing.control({
       waypoints: routeWaypoints,
+      show: false,
       routeWhileDragging: false,
       addWaypoints: false,
       createMarker: function () {
@@ -300,7 +444,6 @@ function findShortestPath() {
           },
         ],
       },
-      show: true,
       collapsible: true,
       router: L.Routing.osrmv1({
         serviceUrl: "https://router.project-osrm.org/route/v1",
@@ -308,7 +451,6 @@ function findShortestPath() {
       }),
     }).addTo(map);
 
-    // Gérer la réponse du routage
     // Gérer la réponse du routage
     routingControl.on("routesfound", function (e) {
       const routes = e.routes;
@@ -735,6 +877,8 @@ function resetMaze() {
 // =============================================
 function updateStatus(phase, message, type = "info") {
   const statusElement = document.getElementById(phase + "-status");
-  statusElement.textContent = message;
-  statusElement.className = "status " + type;
+  if (statusElement) {
+    statusElement.textContent = message;
+    statusElement.className = "status " + type;
+  }
 }
