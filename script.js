@@ -151,8 +151,9 @@ function initMap() {
     L.circle(location.coords, {
       color: location.id === "kaamelott" ? "#32CD32" : "#FF6B6B",
       fillColor: location.id === "kaamelott" ? "#32CD32" : "#FF6B6B",
+
       fillOpacity: 0.1,
-      radius: 60,
+      radius: 100,
     }).addTo(map);
   });
 
@@ -178,29 +179,37 @@ function getCommerceIcon(types) {
   const primaryType = types[0];
 
   const iconMap = {
-    clothes: "👕",
-    restaurant: "🍽️",
-    fast_food: "🍔",
-    hairdresser: "💇",
-    bar: "🍺",
-    bank: "🏦",
-    beauty: "💄",
-    pharmacy: "💊",
-    jewelry: "💎",
-    tattoo: "🔖",
-    florist: "🌸",
-    pub: "🍻",
-    "e-cigarette": "💨",
-    tobacco: "🚬",
-    bakery: "🥖",
-    convenience: "🛒",
-    cafe: "☕",
-    car_repair: "🔧",
-    car: "🚗",
-    supermarket: "🛍️",
-    shoes: "👟",
-    car_wash: "🧽",
-    optician: "👓",
+    clothes: "<img src='/icons/clothes.png' width='35' height='35'/>",
+    restaurant: "<img src='/icons/restaurant.png' width='35' height='35'/>",
+    fast_food: "<img src='/icons/fast-food.png' width='35' height='35'/>",
+    hairdresser: "<img src='/icons/coiffeur.png' width='35' height='35'/>",
+    bar: "<img src='/icons/bar.png' width='35' height='35'/>",
+    bank: "<img src='/icons/bank.png' width='35' height='35'/>",
+    beauty: "<img src='/icons/beauty-saloon.png' width='35' height='35'/>",
+    pharmacy: "<img src='/icons/pharmacy.png' width='35' height='35'/>",
+    jewelry: "<img src='/icons/jewelry.png' width='35' height='35'/>",
+    tattoo: "<img src='/icons/tattoo.png' width='35' height='35'/>",
+    florist: "<img src='/icons/florist.png' width='35' height='35'/>",
+    pub: "<img src='/icons/pub.png' width='35' height='35'/>",
+    "e-cigarette": "<img src='/icons/vape.png' width='35' height='35'/>",
+    tobacco: "<img src='/icons/tobacco.png' width='35' height='35'/>",
+    bakery: "<img src='/icons/bakery.png' width='35' height='35'/>",
+    convenience: "<img src='/icons/epicerie.png' width='35' height='35'/>",
+    cafe: "<img src='/icons/cafe.png' width='35' height='35'/>",
+    car_repair: "<img src='/icons/garage.png' width='35' height='35'/>",
+    car: "<img src='/icons/concessionnaire.png' width='35' height='35'/>",
+    supermarket: "<img src='/icons/supermarche.png' width='35' height='35'/>",
+    shoes: "<img src='/icons/shoes.png' width='35' height='35'/>",
+    car_wash: "<img src='/icons/car-wash.png' width='35' height='35'/>",
+    optician: "<img src='/icons/optician.png' width='35' height='35'/>",
+    butcher: "<img src='/icons/boucherie.png' width='35' height='35'/>",
+    sports: "<img src='/icons/sports.png' width='35' height='35'/>",
+    books: "<img src='/icons/books.png' width='35' height='35'/>",
+    toys: "<img src='/icons/jouets.png' width='35' height='35'/>",
+    nightclub: "<img src='/icons/nightclub.png' width='35' height='35'/>",
+    cinema: "<img src='/icons/cinema.png' width='35' height='35'/>",
+    educational_institution:
+      "<img src='/icons/school.png' width='35' height='35'/>",
   };
 
   return iconMap[primaryType] || "🏪";
@@ -324,10 +333,7 @@ function addWaypointAt(lat, lng, name, emoji, index) {
 
   // Ajouter un cercle autour du point pour une meilleure visibilité
   const circle = L.circle([lat, lng], {
-    color: "#FFD700",
-    fillColor: "#FFD700",
-    fillOpacity: 0.1,
-    radius: 100,
+    color: "transparent",
   }).addTo(map);
 
   // Stocker le cercle dans la liste globale

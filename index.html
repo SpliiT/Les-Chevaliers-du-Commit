@@ -35,18 +35,145 @@
 
                 <!-- Menu flottant -->
                 <div class="floating-menu">
-                    <button class="menu-btn" onclick="findShortestPath()" title="Calculer la route">
-                        <i class="fas fa-route"></i>
-                    </button>
-                    <button class="menu-btn" onclick="clearPath()" title="Effacer la route">
-                        <i class="fas fa-eraser"></i>
-                    </button>
-                    <button class="menu-btn" onclick="addWaypoint()" title="Ajouter un point">
-                        <i class="fas fa-map-pin"></i>
-                    </button>
-                    <button class="menu-btn" onclick="clearWaypoints()" title="Réinitialiser">
-                        <i class="fas fa-redo"></i>
-                    </button>
+                    <div class="menu-actions">
+                        <button class="menu-btn" onclick="findShortestPath()" title="Calculer la route">
+                            <i class="fas fa-route"></i>
+                        </button>
+                        <button class="menu-btn" onclick="clearPath()" title="Effacer la route">
+                            <i class="fas fa-eraser"></i>
+                        </button>
+                        <button class="menu-btn" onclick="addWaypoint()" title="Ajouter un point">
+                            <i class="fas fa-map-pin"></i>
+                        </button>
+                        <button class="menu-btn" onclick="clearWaypoints()" title="Réinitialiser">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                    </div>
+                    <div class="menu-legend">
+                        <h4>Légende</h4>
+                        <div class="legend-grid">
+                            <div class="legend-item" title="Vêtements"><span><img src='/icons/clothes.png' width='35'
+                                        height='35' /></span>
+                                <p>Vêtements</p>
+                            </div>
+                            <div class="legend-item" title="Restaurant"><span><img src='/icons/restaurant.png'
+                                        width='35' height='35' /></span>
+                                <p>Restaurant</p>
+                            </div>
+                            <div class="legend-item" title="Fast-food"><span><img src='/icons/fast-food.png' width='35'
+                                        height='35' /></span>
+                                <p>Fast-food</p>
+                            </div>
+                            <div class="legend-item" title="Coiffeur"><span><img src='/icons/coiffeur.png' width='35'
+                                        height='35' /></span>
+                                <p>Coiffeur</p>
+                            </div>
+                            <div class="legend-item" title="Bar"><span><img src='/icons/bar.png' width='35'
+                                        height='35' /></span>
+                                <p>Bar</p>
+                            </div>
+                            <div class="legend-item" title="Banque"><span><img src='/icons/bank.png' width='35'
+                                        height='35' /></span>
+                                <p>Banque</p>
+                            </div>
+                            <div class="legend-item" title="Beauté"><span><img src='/icons/beauty-saloon.png' width='35'
+                                        height='35' /</span>
+                                    <p>Beauté</p>
+                            </div>
+                            <div class="legend-item" title="Pharmacie"><span><img src='/icons/pharmacy.png' width='35'
+                                        height='35' /></span>
+                                <p>Pharmacie</p>
+                            </div>
+                            <div class="legend-item" title="Bijouterie"><span><img src='/icons/jewelry.png' width='35'
+                                        height='35' /></span>
+                                <p>Bijouterie</p>
+                            </div>
+                            <div class="legend-item" title="Tatouage"><span><img src='/icons/tattoo.png' width='35'
+                                        height='35' /></span>
+                                <p>Tatouage</p>
+                            </div>
+                            <div class="legend-item" title="Fleuriste"><span><img src='/icons/florist.png' width='35'
+                                        height='35' /></span>
+                                <p>Fleuriste</p>
+                            </div>
+                            <div class="legend-item" title="Pub"><span><img src='/icons/pub.png' width='35'
+                                        height='35' /></span>
+                                <p>Pub</p>
+                            </div>
+                            <div class="legend-item" title="Vape Shop"><span><img src='/icons/vape.png' width='35'
+                                        height='35' /></span>
+                                <p>Vape Shop</p>
+                            </div>
+                            <div class="legend-item" title="Tabac"><span><img src='/icons/tobacco.png' width='35'
+                                        height='35' /></span>
+                                <p>Tabac</p>
+                            </div>
+                            <div class="legend-item" title="Boulangerie"><span><img src='/icons/bakery.png' width='35'
+                                        height='35' /></span>
+                                <p>Boulangerie</p>
+                            </div>
+                            <div class="legend-item" title="Supérette"><span><img src='/icons/epicerie.png' width='35'
+                                        height='35' /></span>
+                                <p>Supérette</p>
+                            </div>
+                            <div class="legend-item" title="Café"><span><img src='/icons/cafe.png' width='35'
+                                        height='35' /></span>
+                                <p>Café</p>
+                            </div>
+                            <div class="legend-item" title="Garage auto"><span><img src='/icons/garage.png' width='35'
+                                        height='35' /></span>
+                                <p>Garage auto</p>
+                            </div>
+                            <div class="legend-item" title="Concessionnaire"><span><img src='/icons/concessionnaire.png'
+                                        width='35' height='35' /></span>
+                                <p>Concessionnaire</p>
+                            </div>
+                            <div class="legend-item" title="Chaussures"><span><img src='/icons/shoes.png' width='35'
+                                        height='35' /></span>
+                                <p>Chaussures</p>
+                            </div>
+                            <div class="legend-item" title="Lavage auto"><span><img src='/icons/car-wash.png' width='35'
+                                        height='35' /></span>
+                                <p>Lavage auto</p>
+                            </div>
+                            <div class="legend-item" title="Opticien"><span><img src='/icons/optician.png' width='35'
+                                        height='35' /></span>
+                                <p>Opticien</p>
+                            </div>
+                            <div class="legend-item" title="Supermarché"><span><img src='/icons/supermarche.png'
+                                        width='35' height='35' /></span>
+                                <p>Supermarché</p>
+                            </div>
+                            <div class="legend-item" title="Magasin de sport"><span><img src='/icons/sports.png'
+                                        width='35' height='35' /></span>
+                                <p>Sport</p>
+                            </div>
+                            <div class="legend-item" title="Boucherie"><span><img src='/icons/boucherie.png' width='35'
+                                        height='35' /></span>
+                                <p>Boucherie</p>
+                            </div>
+                            <div class="legend-item" title="Librairie"><span><img src='/icons/books.png' width='35'
+                                        height='35' /></span>
+                                <p>Librairie</p>
+                            </div>
+                            <div class="legend-item" title="Magasin de jouets"><span><img src='/icons/jouets.png'
+                                        width='35' height='35' /></span>
+                                <p>Magasin de jouets</p>
+                            </div>
+                            <div class="legend-item" title="Boite de nuit"><span><img src='/icons/night-club.png'
+                                        width='35' height='35' /></span>
+                                <p>Boite de nuit</p>
+                            </div>
+                            <div class="legend-item" title="Cinéma"><span><img src='/icons/cinema.png' width='35'
+                                        height='35' /></span>
+                                <p>Cinéma</p>
+                            </div>
+                            <div class="legend-item" title="École"><span><img src='/icons/school.png' width='35'
+                                        height='35' /></span>
+                                <p>École</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Infos et légende -->

@@ -228,7 +228,7 @@
         -0.36511401960534007
       ],
       "icon": {
-        "html": " <img src='/icons/marzet.png' width='30' height='30'>",
+        "html": " <img src='/icons/hopital.png' width='30' height='30'>",
         "iconSize": [
           40,
           40
@@ -243,7 +243,7 @@
         ],
         "className": "custom-marker"
       },
-      "popupContent": "<div style=\"text-align: center;\"><h4><img src='/icons/marzet.png' width='30' height='30'> Polyclinique Pau Pyrénées - Site Marzet</h4><p>Point de passage #{index}</p><p><em>Coords: {lat}, {lng}</em></p></div>"
+      "popupContent": "<div style=\"text-align: center;\"><h4><img src='/icons/hopital.png' width='30' height='30'> Polyclinique Pau Pyrénées - Site Marzet</h4><p>Point de passage #{index}</p><p><em>Coords: {lat}, {lng}</em></p></div>"
     },
     {
       "id": "pointI",
