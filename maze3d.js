@@ -18,7 +18,7 @@ let directionalLight, ambientLight;
 // Variables pour contrôles fluides
 let keys = {};
 let isMoving = false;
-let moveSpeed = 0.25; // Vitesse très augmentée
+let moveSpeed = 0.25;
 let cameraRotation = { x: 0, y: 0 };
 let isMouseLocked = false;
 
@@ -311,7 +311,7 @@ function setViewMode(mode) {
   }
 
   if (mode === "firstperson") {
-    camera.fov = 90;
+    camera.fov = 120;
     if (canvas) {
       canvas.style.cursor = "none";
       canvas.addEventListener("click", lockPointer);
@@ -320,7 +320,7 @@ function setViewMode(mode) {
       fpsInstructions.classList.add("visible");
     }
   } else {
-    camera.fov = mode === "topdown" ? 45 : 65;
+    camera.fov = mode === "topdown" ? 55 : 65;
     if (canvas) {
       canvas.style.cursor = "default";
       if (document.exitPointerLock) {
