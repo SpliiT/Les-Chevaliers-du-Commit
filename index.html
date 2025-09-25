@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style2.css">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="maze3d.css">
 </head>
 
 
@@ -253,7 +254,6 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
 
                 <!-- Infos et légende -->
@@ -274,25 +274,76 @@
 
             <!-- Phase Labyrinthe -->
             <div id="maze-container" class="phase-content">
-                <div id="maze"></div>
+                <!-- Labyrinthe 2D original (caché par défaut) -->
+                <div id="maze" style="display: none;"></div>
 
+                <!-- Nouveau conteneur 3D -->
+                <div id="maze3d-container">
+                    <canvas id="maze3d-canvas"></canvas>
+                </div>
+
+                <!-- Menu flottant avec ajout des contrôles 3D -->
                 <div class="floating-menu">
-                    <button class="menu-btn" onclick="generateMaze()" data-title="Nouveau labyrinthe">
-                        <i class="fas fa-random"></i>
-                    </button>
-                    <button class="menu-btn" onclick="solveMaze()" data-title="Résoudre">
-                        <i class="fas fa-puzzle-piece"></i>
-                    </button>
-                    <button class="menu-btn" onclick="startArthurJourney()" data-title="Animation Arthur">
-                        <i class="fas fa-play"></i>
-                    </button>
-                    <button class="menu-btn" onclick="resetMaze()" data-title="Reset">
-                        <i class="fas fa-undo"></i>
-                    </button>
+                    <div class="menu-actions">
+                        <button class="menu-btn" onclick="generateMaze3D()" data-title="Nouveau labyrinthe">
+                            <i class="fas fa-random"></i>
+                        </button>
+                        <button class="menu-btn" onclick="solveMaze3D()" data-title="Résoudre">
+                            <i class="fas fa-puzzle-piece"></i>
+                        </button>
+                        <button class="menu-btn" onclick="startArthurJourney3D()" data-title="Animation Arthur">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button class="menu-btn" onclick="resetMaze3D()" data-title="Reset">
+                            <i class="fas fa-undo"></i>
+                        </button>
+                    </div>
+
+                    <!-- Nouveau panneau de contrôles de vue -->
+                    <div class="menu-legend">
+                        <h4>Mode de vue</h4>
+                        <div class="view-controls-grid">
+                            <div class="legend-item view-btn active" onclick="setViewMode('topdown')"
+                                data-title="Vue d'au-dessus">
+                                <span><i class="fas fa-eye"></i></span>
+                                <p>Vue du dessus</p>
+                            </div>
+                            <div class="legend-item view-btn" onclick="setViewMode('thirdperson')"
+                                data-title="Troisième personne">
+                                <span><i class="fas fa-user"></i></span>
+                                <p>3ème personne</p>
+                            </div>
+                            <div class="legend-item view-btn" onclick="setViewMode('firstperson')"
+                                data-title="Première personne">
+                                <span><i class="fas fa-video"></i></span>
+                                <p>1ère personne</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contrôles de mouvement pour la première personne -->
+                <div id="movement-controls" class="movement-controls" style="display: none;">
+                    <div class="controls-layout">
+                        <button class="move-btn" onclick="moveArthur('forward')" data-title="Avancer">
+                            <i class="fas fa-arrow-up"></i>
+                        </button>
+                        <div class="side-controls">
+                            <button class="move-btn" onclick="moveArthur('left')" data-title="Gauche">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <button class="move-btn" onclick="moveArthur('backward')" data-title="Reculer">
+                                <i class="fas fa-arrow-down"></i>
+                            </button>
+                            <button class="move-btn" onclick="moveArthur('right')" data-title="Droite">
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="info-overlay">
-                    <div id="maze-status" class="status">Générez un labyrinthe !</div>
+                    <div id="maze-status" class="status">Générez un labyrinthe 3D !</div>
                     <div class="legend">
                         <div class="legend-item">
                             <div class="legend-color" style="background: var(--emerald);"></div>
@@ -319,6 +370,10 @@
     <script src="script.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="script.js"></script>
+    <script src="maze3d.js"></script>
+
 </body>
 
 </html>
