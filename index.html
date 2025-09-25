@@ -12,11 +12,47 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=IM+Fell+English+SC&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style2.css">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="maze3d.css">
 </head>
 
+
 <body>
+    <header class="site-header">
+        <div class="simple-nav">
+            <a class="nav-button nav-about" href="about.html" aria-label="À propos">👤</a>
+        </div>
+    </header>
+    <div class="background-block">
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; text-align: center; margin-top: 20px; padding: 50px;">
+            <div class="card-body" style="max-width: 600px;">
+                <h1>Royaume de Kaamelott</h1>
+                <p>Aidez le roi Arthur à accomplir sa quête et à découvrir le trésor caché.</p>
+                <p>Le roi Arthur s'est vu confier une quête par la Dame du Lac. Celle-ci lui a révélé
+                    l'existence d'un trésor inestimable caché dans un labyrinthe mystérieux. Votre mission est de guider
+                    Arthur dans cette aventure épique.</p>
+            </div>
+            <div>
+                <button class="scroll-btn" onclick="startTutorial()">Commencer le jeu !</button>
+            </div>
+        </div>
+
+        <!-- Didacticiel overlay -->
+        <div id="tutorial-overlay" class="tutorial-overlay" style="display: none;" role="dialog" aria-modal="true"
+            aria-labelledby="tutorial-title">
+            <div class="tutorial-content">
+                <h2 id="tutorial-title" style="margin:0 0 8px 0;">Didacticiel</h2>
+                <p id="tutorial-text"></p>
+                <div style="margin-top:10px;">
+                    <button id="tutorial-next" class="tutorial-btn" aria-label="Suivant">Suivant</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
     <div class="app-container">
         <!-- Panneau latéral -->
         <div class="sidebar">
@@ -331,6 +367,7 @@
         </div>
     </div>
 
+    <script src="script.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>

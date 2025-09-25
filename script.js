@@ -1057,3 +1057,100 @@ function updateStatus(phase, message, type = "info") {
     statusElement.className = "status " + type;
   }
 }
+
+// =============================================
+// Function du Didacticiel
+// =============================================
+// Fonction pour démarrer le didacticiel vocal
+function startTutorial() {
+  // Afficher l'overlay du didacticiel
+  const overlay = document.getElementById('tutorial-overlay');
+  const textElement = document.getElementById('tutorial-text');
+  const nextButton = document.getElementById('tutorial-next');
+  overlay.style.display = 'flex';
+
+  // Messages du didacticiel avec actions associées (phrases plus courtes)
+  const tutorialSteps = [
+    {
+      text: "Bienvenue dans le royaume de Kaamelott !",
+      action: null
+    },
+    {
+      text: "Vous allez aider le roi Arthur à trouver le trésor caché de la Dame du Lac.",
+      action: null
+    },
+    {
+      text: "Votre mission : guider Arthur depuis Kaamelott jusqu'à l'entrée du labyrinthe.",
+      action: () => document.querySelector('.main-content').scrollIntoView({ behavior: 'smooth' })
+    },
+    {
+      text: "Puis à travers le labyrinthe pour atteindre le trésor.",
+      action: null
+    },
+    {
+      text: "Le jeu a deux phases principales.",
+      action: () => showPhase('map')
+    },
+    {
+      text: "La première phase utilise une carte interactive pour planifier le voyage.",
+      action: null
+    },
+    {
+      text: "Cliquez sur 'Calculer Route Optimale' pour trouver le meilleur chemin.",
+      action: null
+    },
+    {
+      text: "Une fois à l'entrée du labyrinthe, passez à la deuxième phase.",
+      action: () => showPhase('maze')
+    },
+    {
+      text: "Le labyrinthe mystérieux.",
+      action: null
+    },
+    {
+      text: "Générez un nouveau labyrinthe avec 'Nouveau Labyrinthe'.",
+      action: null
+    },
+    {
+      text: "Que la quête commence !",
+      action: () => {
+        overlay.style.display = 'none';
+        showPhase('map');
+      }
+    },
+    {
+      text: "Bonne chance, noble chevalier !",
+      action: null
+    }
+  ];
+
+  let currentStep = 0;
+
+  // Fonction pour afficher et parler un message
+  function showStep(stepIndex) {
+    if (stepIndex >= tutorialSteps.length) {
+      return;
+    }
+
+    const step = tutorialSteps[stepIndex];
+    textElement.textContent = step.text;
+
+    // Exécuter l'action associée si elle existe
+    if (step.action) {
+      step.action();
+    }
+  }
+
+  // Gestionnaire pour le bouton suivant
+  nextButton.onclick = () => {
+    currentStep++;
+    if (currentStep < tutorialSteps.length) {
+      showStep(currentStep);
+    } else {
+      overlay.style.display = 'none';
+    }
+  };
+
+  // Démarrer le didacticiel
+  showStep(0);
+}
