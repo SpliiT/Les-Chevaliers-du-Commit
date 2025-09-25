@@ -3,101 +3,287 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quête de Kaamelott - La Recherche du Trésor</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Quête de Kaamelott | Trésor Perdu</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=IM+Fell+English+SC&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <div class="container">
-        <h1>⚔️ Quête de Kaamelott ⚔️</h1>
-
-        <div class="quest-info">
-            <p><strong>Mission :</strong> Aider le roi Arthur à trouver l'entrée du labyrinthe, puis le guider vers le
-                trésor mystérieux de la Dame du Lac.</p>
+    <div class="app-container">
+        <!-- Panneau latéral -->
+        <div class="sidebar">
+            <button class="sidebar-btn active" onclick="showPhase('map')">
+                <i class="fas fa-map"></i>
+            </button>
+            <button class="sidebar-btn" onclick="showPhase('maze')">
+                <i class="fas fa-dungeon"></i>
+            </button>
         </div>
 
-        <div class="phase-selector">
-            <button class="phase-btn active" onclick="showPhase('map')">🗺️ Carte du Royaume</button>
-            <button class="phase-btn" onclick="showPhase('maze')">🏰 Labyrinthe Mystérieux</button>
-        </div>
+        <!-- Contenu principal -->
+        <div class="main-content">
+            <!-- Phase Carte -->
+            <div id="map-container" class="phase-content active">
+                <div id="map"></div>
 
-        <div id="map-container" class="active">
-            <div id="map"></div>
-            <div class="controls">
-                <button class="control-btn" onclick="findShortestPath()">🧭 Calculer Route Optimale</button>
-                <button class="control-btn" onclick="clearPath()">🧹 Effacer le Chemin</button>
-                <button class="control-btn" onclick="addWaypoint()">📍 Ajouter Point de Passage</button>
-                <button class="control-btn" onclick="centerOnKaamelott()">🏰 Centrer sur Kaamelott</button>
-            </div>
-            <div class="info-panel">
-                <div id="map-status" class="status">Cliquez sur "Calculer Route Optimale" pour commencer la quête avec
-                    Leaflet Routing !</div>
-                <div class="legend">
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #32CD32;"></div>
-                        <span>Kaamelott</span>
+                <!-- Menu flottant -->
+                <div class="floating-menu">
+                    <div class="menu-actions">
+                        <button class="menu-btn" onclick="findShortestPath()" data-title="Calculer la route">
+                            <i class="fas fa-route"></i>
+                        </button>
+                        <button class="menu-btn" onclick="clearPath()" data-title="Effacer la route">
+                            <i class="fas fa-eraser"></i>
+                        </button>
+                        <button class="menu-btn" onclick="clearWaypoints()" data-title="Réinitialiser">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                        <button class="menu-btn" onclick="centerPau()" data-title="Centrer sur Pau">
+                            <i class="fas fa-globe"></i>
+                        </button>
                     </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #FF6B6B;"></div>
-                        <span>Entrée du Labyrinthe</span>
+                    <div class="menu-legend">
+                        <h4>Légende (cliquez pour localiser)</h4>
+                        <div class="legend-grid">
+                            <!-- B -->
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('bank')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/bank.png' width='35' height='35' /></span>
+                                <p>Banque</p>
+                            </div>
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('bar')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/bar.png' width='35' height='35' /></span>
+                                <p>Bar</p>
+                            </div>
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('beauty')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/beauty.png' width='35' height='35' /></span>
+                                <p>Beauté</p>
+                            </div>
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('jewelry')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/jewelry.png' width='35' height='35' /></span>
+                                <p>Bijouterie</p>
+                            </div>
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('bakery')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/bakery.png' width='35' height='35' /></span>
+                                <p>Boulangerie</p>
+                            </div>
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('butcher')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/butcher.png' width='35' height='35' /></span>
+                                <p>Boucherie</p>
+                            </div>
+                            <!-- C -->
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('cafe')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/cafe.png' width='35' height='35' /></span>
+                                <p>Café</p>
+                            </div>
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('car')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/car.png' width='35' height='35' /></span>
+                                <p>Concessionnaire</p>
+                            </div>
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('car_repair')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/car_repair.png' width='35' height='35' /></span>
+                                <p>Garage auto</p>
+                            </div>
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('car_wash')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/car_wash.png' width='35' height='35' /></span>
+                                <p>Lavage auto</p>
+                            </div>
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('cinema')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/cinema.png' width='35' height='35' /></span>
+                                <p>Cinéma</p>
+                            </div>
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('clothes')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/clothes.png' width='35' height='35' /></span>
+                                <p>Vêtements</p>
+                            </div>
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('shoes')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/shoes.png' width='35' height='35' /></span>
+                                <p>Chaussures</p>
+                            </div>
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('hairdresser')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/hairdresser.png' width='35' height='35' /></span>
+                                <p>Coiffeur</p>
+                            </div>
+                            <!-- E -->
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('educational_institution')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/educational_institution.png' width='35' height='35' /></span>
+                                <p>École</p>
+                            </div>
+                            <!-- F -->
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('fast_food')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/fast_food.png' width='35' height='35' /></span>
+                                <p>Fast-food</p>
+                            </div>
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('florist')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/florist.png' width='35' height='35' /></span>
+                                <p>Fleuriste</p>
+                            </div>
+                            <!-- L -->
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('books')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/books.png' width='35' height='35' /></span>
+                                <p>Librairie</p>
+                            </div>
+                            <!-- M -->
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('toys')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/toys.png' width='35' height='35' /></span>
+                                <p>Magasin de jouets</p>
+                            </div>
+                            <!-- N -->
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('nightclub')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/nightclub.png' width='35' height='35' /></span>
+                                <p>Boite de nuit</p>
+                            </div>
+                            <!-- O -->
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('optician')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/optician.png' width='35' height='35' /></span>
+                                <p>Opticien</p>
+                            </div>
+                            <!-- P -->
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('pharmacy')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/pharmacy.png' width='35' height='35' /></span>
+                                <p>Pharmacie</p>
+                            </div>
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('pub')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/pub.png' width='35' height='35' /></span>
+                                <p>Pub</p>
+                            </div>
+                            <!-- R -->
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('restaurant')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/restaurant.png' width='35' height='35' /></span>
+                                <p>Restaurant</p>
+                            </div>
+                            <!-- S -->
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('sports')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/sports.png' width='35' height='35' /></span>
+                                <p>Sport</p>
+                            </div>
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('convenience')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/convenience.png' width='35' height='35' /></span>
+                                <p>Supérette</p>
+                            </div>
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('supermarket')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/supermarket.png' width='35' height='35' /></span>
+                                <p>Supermarché</p>
+                            </div>
+                            <!-- T -->
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('tobacco')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/tobacco.png' width='35' height='35' /></span>
+                                <p>Tabac</p>
+                            </div>
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('tattoo')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/tattoo.png' width='35' height='35' /></span>
+                                <p>Tatouage</p>
+                            </div>
+                            <!-- V -->
+                            <div class="legend-item clickable" onclick="centerOnCommerceType('e-cigarette')"
+                                data-title="Cliquez pour localiser le plus proche">
+                                <span><img src='/icons/e-cigarette.png' width='35' height='35' /></span>
+                                <p>Vape Shop</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #FFD700;"></div>
-                        <span>Points de Passage</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #4169E1; border: 2px dashed white;"></div>
-                        <span>Route Leaflet (vraies routes)</span>
+
+                </div>
+
+                <!-- Infos et légende -->
+                <div class="info-overlay">
+                    <div id="map-status" class="status">Clic droit pour ajouter un waypoint</div>
+                    <div class="legend">
+                        <div class="legend-item" onclick="centerKaamelott()" data-title="Centrer sur ma position">
+                            <div class="legend-color" style="background: var(--emerald);"></div>
+                            <span>Kaamelott</span>
+                        </div>
+                        <div class="legend-item" onclick="centerLabyrinthe()" data-title="Centrer sur le labyrinthe">
+                            <div class="legend-color" style="background: var(--ruby);"></div>
+                            <span>Château</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div id="maze-container">
-            <div id="maze"></div>
-            <div class="controls">
-                <button class="control-btn" onclick="generateMaze()">🏗️ Nouveau Labyrinthe</button>
-                <button class="control-btn" onclick="solveMaze()">🧭 Résoudre le Labyrinthe</button>
-                <button class="control-btn" onclick="startArthurJourney()">👑 Guider Arthur</button>
-                <button class="control-btn" onclick="resetMaze()">🔄 Recommencer</button>
-            </div>
-            <div class="info-panel">
-                <div id="maze-status" class="status">Générez un nouveau labyrinthe pour commencer l'aventure !</div>
-                <div class="legend">
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #32CD32;"></div>
-                        <span>Entrée</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #FFD700;"></div>
-                        <span>Trésor</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #4169E1;"></div>
-                        <span>Arthur</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #FF6B6B;"></div>
-                        <span>Chemin Solution</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #2c1810;"></div>
-                        <span>Mur</span>
+            <!-- Phase Labyrinthe -->
+            <div id="maze-container" class="phase-content">
+                <div id="maze"></div>
+
+                <div class="floating-menu">
+                    <button class="menu-btn" onclick="generateMaze()" data-title="Nouveau labyrinthe">
+                        <i class="fas fa-random"></i>
+                    </button>
+                    <button class="menu-btn" onclick="solveMaze()" data-title="Résoudre">
+                        <i class="fas fa-puzzle-piece"></i>
+                    </button>
+                    <button class="menu-btn" onclick="startArthurJourney()" data-title="Animation Arthur">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button class="menu-btn" onclick="resetMaze()" data-title="Reset">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                </div>
+
+                <div class="info-overlay">
+                    <div id="maze-status" class="status">Générez un labyrinthe !</div>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: var(--emerald);"></div>
+                            <span>Entrée</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: var(--gold);"></div>
+                            <span>Trésor</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #4169e1;"></div>
+                            <span>Arthur</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: var(--ruby);"></div>
+                            <span>Solution</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <script src="script.js"></script>
-    <script src="labyrinthe.js"></script>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-    <script>
+    <script src="script.js"></script>
 
-    </script>
 </body>
 
 </html>
