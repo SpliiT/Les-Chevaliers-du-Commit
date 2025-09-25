@@ -353,8 +353,8 @@ p {
 
 .scroll-btn {
   position: absolute;
-  right: 40%;
-  top: 30%;
+  right: 550px;
+  top: 500px;
   transform: translateY(-50%);
   padding: 10px 20px;
   font-size: 2em;
@@ -741,7 +741,7 @@ p {
   align-items: center;
   justify-content: center;
   font-size: 44px;
-  background: radial-gradient(circle at 30% 20%, #ffd700, #e6b800);
+  background: url("./images/chevalier.png") no-repeat center center;
   color: #2c1810;
   border: 4px solid rgba(139, 69, 19, 0.9);
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35),
