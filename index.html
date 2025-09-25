@@ -19,37 +19,17 @@
 
 
 <body>
-    <header class="site-header">
-        <div class="simple-nav">
-            <a class="nav-button nav-about" href="about.html" aria-label="À propos">👤</a>
-        </div>
-    </header>
-    <div class="background-block">
-        <div
-            style="display: flex; justify-content: space-between; align-items: center; text-align: center; margin-top: 20px; padding: 50px;">
-            <div class="card-body" style="max-width: 600px;">
-                <h1>Royaume de Kaamelott</h1>
-                <p>Aidez le roi Arthur à accomplir sa quête et à découvrir le trésor caché.</p>
-                <p>Le roi Arthur s'est vu confier une quête par la Dame du Lac. Celle-ci lui a révélé
-                    l'existence d'un trésor inestimable caché dans un labyrinthe mystérieux. Votre mission est de guider
-                    Arthur dans cette aventure épique.</p>
-            </div>
-            <div>
-                <button class="scroll-btn" onclick="startTutorial()">Commencer le jeu !</button>
+    <!-- Didacticiel overlay -->
+    <div id="tutorial-overlay" class="tutorial-overlay" style="display: none;" role="dialog" aria-modal="true"
+        aria-labelledby="tutorial-title">
+        <div class="tutorial-content">
+            <h2 id="tutorial-title" style="margin:0 0 8px 0;">Didacticiel</h2>
+            <p id="tutorial-text"></p>
+            <div style="margin-top:10px;">
+                <button id="tutorial-next" class="tutorial-btn" aria-label="Suivant">Suivant</button>
             </div>
         </div>
-
-        <!-- Didacticiel overlay -->
-        <div id="tutorial-overlay" class="tutorial-overlay" style="display: none;" role="dialog" aria-modal="true"
-            aria-labelledby="tutorial-title">
-            <div class="tutorial-content">
-                <h2 id="tutorial-title" style="margin:0 0 8px 0;">Didacticiel</h2>
-                <p id="tutorial-text"></p>
-                <div style="margin-top:10px;">
-                    <button id="tutorial-next" class="tutorial-btn" aria-label="Suivant">Suivant</button>
-                </div>
-            </div>
-        </div>
+    </div>
 
     </div>
 
@@ -316,7 +296,7 @@
                             <div class="legend-item view-btn" onclick="setViewMode('firstperson')"
                                 data-title="Première personne">
                                 <span><i class="fas fa-video"></i></span>
-                                <p>1ère personne</p>
+                                <p>POV</p>
                             </div>
                         </div>
                     </div>
