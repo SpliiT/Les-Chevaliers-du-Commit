@@ -1,0 +1,84 @@
+{
+  "mapSettings": {
+    "center": [
+      43.3028,
+      -0.3600404938953455
+    ],
+    "zoom": 14,
+    "tileLayers": [
+      {
+        "name": "Thunderforest Pioneer",
+        "url": "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
+        "attribution": "© OpenStreetMap contributors",
+        "maxZoom": 17,
+        "minZoom": 3
+      }
+    ]
+  },
+  "mainLocations": [
+    {
+      "id": "kaamelott",
+      "name": "Kaamelott",
+      "description": "Fabrique Numérique Paloise, Pau",
+      "coords": [
+        43.30895117678526,
+        -0.360458904016527
+      ],
+      "icon": {
+        "html": "<img src='/icons/fnp.png' width='30' height='30'>",
+        "iconSize": [
+          40,
+          40
+        ],
+        "iconAnchor": [
+          20,
+          20
+        ],
+        "popupAnchor": [
+          0,
+          -20
+        ],
+        "className": "custom-marker"
+      },
+      "popupContent": "<div style=\"text-align: center;\"><h3><img src='/icons/fnp.png' width='30' height='30'> Kaamelott</h3><p><strong>Fabrique Numérique Paloise</strong></p><p>Point de départ de la quête</p><p><em>Coords: {lat}, {lng}</em></p></div>"
+    },
+    {
+      "id": "labyrinth",
+      "name": "Entrée du Labyrinthe",
+      "description": "Château de Pau",
+      "coords": [
+        43.294821254409726,
+        -0.3755785831268032
+      ],
+      "icon": {
+        "html": "<img src='/icons/chateau.png' width='30' height='30'>",
+        "iconSize": [
+          40,
+          40
+        ],
+        "iconAnchor": [
+          20,
+          20
+        ],
+        "popupAnchor": [
+          0,
+          -20
+        ],
+        "className": "custom-marker"
+      },
+      "popupContent": "<div style=\"text-align: center;\"><h3><img src='/icons/chateau.png' width='30' height='30'> Entrée du Labyrinthe</h3><p><strong>Château de Pau</strong></p><p>Destination finale</p><p><em>Coords: {lat}, {lng}</em></p></div>"
+    }
+  ],
+  "mazeSettings": {
+    "size": 21,
+    "start": {
+      "x": 1,
+      "y": 1
+    },
+    "end": {
+      "x": 19,
+      "y": 19
+    },
+    "cellSize": "25px"
+  }
+}

@@ -1,140 +1,254 @@
-// Variables globales pour Leaflet
-let map;
-let kaamelottMarker, labyrinthMarker;
-let waypoints = [];
-let waypointMarkers = [];
-let routingControl;
-let customRoute;
-let maze = [];
-let mazeSize = 21;
-let arthurPosition = null;
-let solutionPath = [];
+// =============================================
+// Variables globales pour la gestion de la carte et du labyrinthe
+// =============================================
+let map; // Instance de la carte Leaflet
+let kaamelottMarker, labyrinthMarker; // Marqueurs pour les lieux principaux
+let waypoints = []; // Liste des points de passage
+let waypointMarkers = []; // Liste des marqueurs des points de passage
+let routingControl; // Contrôleur de routage Leaflet
+let customRoute; // Route personnalisée si le routage échoue
+let maze = []; // Tableau 2D représentant le labyrinthe
+let mazeSize = 21; // Taille par défaut du labyrinthe
+let arthurPosition = null; // Position actuelle d'Arthur dans le labyrinthe
+let solutionPath = []; // Chemin solution du labyrinthe
+let appData = null; // Données chargées depuis le fichier JSON
+let waypointCircles = []; // Liste des cercles des points de passage
+let commercesPau = [];
 
-// Coordonnées réelles (format Leaflet: [lat, lng])
-const kaamelottCoords = [43.3124, -0.3668]; // Pôle Lahérrère, Pau
-const labyrinthCoords = [43.2933, -0.3708]; // Château de Pau
-
-// Points de passage prédéfinis autour de Pau avec coordonnées réelles
-const predefinedWaypoints = [
-  [43.305, -0.365, "Place Verdun", "🏛️"],
-  [43.298, -0.372, "Université de Pau", "🎓"],
-  [43.31, -0.36, "Parc Lawrence", "🌳"],
-  [43.3, -0.368, "Centre-ville de Pau", "🏪"],
-  [43.315, -0.372, "Boulevard des Pyrénées", "🏔️"],
-  [43.308, -0.359, "Stade du Hameau", "⚽"],
-  [43.295, -0.375, "Gare SNCF de Pau", "🚂"],
-];
-
-// Initialisation
-window.onload = function () {
-  initMap();
-  generateMaze();
-};
-
-function initMap() {
-  // Initialiser la carte Leaflet avec une vue centrée sur Pau
-  map = L.map("map").setView([43.3028, -0.3678], 14);
-
-  // Ajouter plusieurs couches de tuiles pour plus de richesse
-  const osmLayer = L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-      attribution: "© OpenStreetMap contributors",
-      maxZoom: 19,
+// =============================================
+// Charger les données depuis le fichier data.json
+// =============================================
+async function loadData() {
+  try {
+    // Récupérer et parser le fichier JSON
+    const response = await fetch("data.json");
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP! Statut: ${response.status}`);
     }
-  );
-
-  const cartoLayer = L.tileLayer(
-    "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-    {
-      attribution: "© CARTO © OpenStreetMap contributors",
-      maxZoom: 19,
-    }
-  );
-
-  // Ajouter la couche par défaut
-  osmLayer.addTo(map);
-
-  // Contrôleur de couches
-  const baseMaps = {
-    OpenStreetMap: osmLayer,
-    "CartoDB Voyager": cartoLayer,
-  };
-  L.control.layers(baseMaps).addTo(map);
-
-  // Créer des icônes personnalisées avec Leaflet
-  const kaamelottIcon = L.divIcon({
-    html: '<div style="background: linear-gradient(45deg, #32CD32, #228B22); border: 3px solid #FFD700; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 0 15px rgba(50, 205, 50, 0.7);">🏰</div>',
-    iconSize: [40, 40],
-    iconAnchor: [20, 20],
-    popupAnchor: [0, -20],
-    className: "custom-marker",
-  });
-
-  const labyrinthIcon = L.divIcon({
-    html: '<div style="background: linear-gradient(45deg, #FF6B6B, #FF4444); border: 3px solid #FFD700; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 0 15px rgba(255, 107, 107, 0.7);">🌀</div>',
-    iconSize: [40, 40],
-    iconAnchor: [20, 20],
-    popupAnchor: [0, -20],
-    className: "custom-marker",
-  });
-
-  // Marqueur Kaamelott avec popup enrichi
-  kaamelottMarker = L.marker(kaamelottCoords, { icon: kaamelottIcon })
-    .addTo(map)
-    .bindPopup(
-      `
-                    <div style="text-align: center;">
-                        <h3>🏰 Kaamelott</h3>
-                        <p><strong>Pôle Lahérrère, Pau</strong></p>
-                        <p>Point de départ de la quête</p>
-                        <p><em>Coords: ${kaamelottCoords[0]}, ${kaamelottCoords[1]}</em></p>
-                    </div>
-                `,
-      {
-        maxWidth: 250,
-      }
-    );
-
-  // Marqueur Labyrinthe avec popup enrichi
-  labyrinthMarker = L.marker(labyrinthCoords, { icon: labyrinthIcon })
-    .addTo(map)
-    .bindPopup(
-      `
-                    <div style="text-align: center;">
-                        <h3>🌀 Entrée du Labyrinthe</h3>
-                        <p><strong>Château de Pau</strong></p>
-                        <p>Destination finale</p>
-                        <p><em>Coords: ${labyrinthCoords[0]}, ${labyrinthCoords[1]}</em></p>
-                    </div>
-                `,
-      {
-        maxWidth: 250,
-      }
-    );
-
-  // Ajouter des cercles pour visualiser les zones
-  L.circle(kaamelottCoords, {
-    color: "#32CD32",
-    fillColor: "#32CD32",
-    fillOpacity: 0.1,
-    radius: 200,
-  }).addTo(map);
-
-  L.circle(labyrinthCoords, {
-    color: "#FF6B6B",
-    fillColor: "#FF6B6B",
-    fillOpacity: 0.1,
-    radius: 200,
-  }).addTo(map);
-
-  // Ajouter les premiers points de passage par défaut
-  predefinedWaypoints.slice(0, 3).forEach((wp, index) => {
-    addWaypointAt(wp[0], wp[1], wp[2], wp[3]);
-  });
+    appData = await response.json();
+    return appData;
+  } catch (error) {
+    // Gérer les erreurs de chargement
+    console.error("Erreur lors du chargement du fichier JSON :", error);
+    return null;
+  }
 }
 
+// =============================================
+// Charger les commerces de Pau
+// =============================================
+async function loadCommercesPau() {
+  try {
+    const response = await fetch("pau.json");
+    if (!response.ok) throw new Error("Erreur de chargement");
+    const data = await response.json();
+
+    // CORRECTION: Adapter la structure du JSON pau.json
+    commercesPau = data.filter((item) => {
+      const lat = item.geo_point_2d.lat;
+      const lng = item.geo_point_2d.lon;
+      return lat > 43.2 && lat < 43.4 && lng > -0.45 && lng < -0.3;
+    });
+    console.log("Commerces de Pau chargés :", commercesPau.length);
+  } catch (error) {
+    console.error("Erreur :", error);
+    updateStatus("map", "Impossible de charger les commerces de Pau.", "error");
+  }
+}
+
+// =============================================
+// Initialisation de l'application au chargement de la page
+// =============================================
+window.onload = async function () {
+  await loadCommercesPau(); // Charger les commerces AVANT
+  appData = await loadData();
+  if (appData) {
+    initMap(); // Initialiser la carte
+    generateMaze(); // Générer le labyrinthe
+  } else {
+    updateStatus("map", "Impossible de charger les données.", "error");
+  }
+};
+
+// =============================================
+// Initialiser la carte Leaflet avec les paramètres du JSON
+// =============================================
+function initMap() {
+  // Récupérer les paramètres de la carte depuis appData
+  const { center, zoom, tileLayers } = appData.mapSettings;
+  // Créer la carte centrée sur les coordonnées spécifiées
+  map = L.map("map", {
+    center: center,
+    zoom: zoom,
+    attributionControl: false,
+    minZoom: 13, // Empêche de dézoomer au-delà de ce niveau
+    maxZoom: 17, // Empêche de zoomer au-delà de ce niveau
+  });
+
+  // Gestionnaire d'événement pour le clic droit (ajout de waypoint)
+  map.on("contextmenu", function (e) {
+    e.originalEvent.preventDefault(); // Désactive le menu contextuel
+
+    const { lat, lng } = e.latlng;
+    const { commerce: nearest, distance } = findNearestCommerce(lat, lng);
+    const MAX_DISTANCE = 500; // Seuil en mètres
+
+    if (nearest && distance <= MAX_DISTANCE) {
+      // Obtenir le type principal du commerce pour le stocker
+      const primaryType = nearest.type.split(", ")[0];
+
+      addWaypointAt(
+        nearest.coords[0],
+        nearest.coords[1],
+        nearest.name,
+        nearest.icon,
+        waypoints.length + 1,
+        primaryType // Passer le type de commerce
+      );
+      updateStatus(
+        "map",
+        `✅ Waypoint ajouté : ${nearest.name} (${distance.toFixed(0)}m)`,
+        "success"
+      );
+    } else {
+      updateStatus(
+        "map",
+        `❌ Aucun commerce trouvé à moins de ${MAX_DISTANCE}m.`,
+        "error"
+      );
+    }
+  });
+
+  // Ajouter les couches de tuiles (ex: OpenStreetMap)
+  const layers = {};
+  tileLayers.forEach((layer) => {
+    const tileLayer = L.tileLayer(layer.url, {
+      attribution: layer.attribution,
+      maxZoom: layer.maxZoom,
+    });
+    layers[layer.name] = tileLayer;
+    if (Object.keys(layers)[0] === layer.name) {
+      tileLayer.addTo(map); // Ajouter la première couche par défaut
+    }
+  });
+
+  // Ajouter les marqueurs principaux (Kaamelott et Labyrinthe)
+  appData.mainLocations.forEach((location) => {
+    const icon = L.divIcon(location.icon);
+    const marker = L.marker(location.coords, { icon: icon })
+      .addTo(map)
+      .bindPopup(
+        location.popupContent
+          .replace("{lat}", location.coords[0])
+          .replace("{lng}", location.coords[1]),
+        { maxWidth: 250 }
+      );
+
+    // Stocker les marqueurs dans des variables globales pour un accès facile
+    if (location.id === "kaamelott") {
+      kaamelottMarker = marker;
+    } else if (location.id === "labyrinth") {
+      labyrinthMarker = marker;
+    }
+
+    // Ajouter un cercle autour du marqueur pour une meilleure visibilité
+    L.circle(location.coords, {
+      color: location.id === "kaamelott" ? "#32CD32" : "#FF6B6B",
+      fillColor: location.id === "kaamelott" ? "#32CD32" : "#FF6B6B",
+      fillOpacity: 0.1,
+      radius: 100,
+    }).addTo(map);
+  });
+
+  updateStatus(
+    "map",
+    "Carte initialisée. Clic droit pour ajouter des waypoints.",
+    "success"
+  );
+}
+
+// =============================================
+// Obtenir l'icône selon le type de commerce
+// =============================================
+function getCommerceIcon(types) {
+  if (!types || types.length === 0) return "🏪";
+
+  // Prendre le premier type pour déterminer l'icône
+  const primaryType = types[0];
+
+  const iconMap = {
+    clothes: "<img src='/icons/clothes.png' width='35' height='35'/>",
+    restaurant: "<img src='/icons/restaurant.png' width='35' height='35'/>",
+    fast_food: "<img src='/icons/fast_food.png' width='35' height='35'/>",
+    hairdresser: "<img src='/icons/hairdresser.png' width='35' height='35'/>",
+    bar: "<img src='/icons/bar.png' width='35' height='35'/>",
+    bank: "<img src='/icons/bank.png' width='35' height='35'/>",
+    beauty: "<img src='/icons/beauty.png' width='35' height='35'/>",
+    pharmacy: "<img src='/icons/pharmacy.png' width='35' height='35'/>",
+    jewelry: "<img src='/icons/jewelry.png' width='35' height='35'/>",
+    tattoo: "<img src='/icons/tattoo.png' width='35' height='35'/>",
+    florist: "<img src='/icons/florist.png' width='35' height='35'/>",
+    pub: "<img src='/icons/pub.png' width='35' height='35'/>",
+    "e-cigarette": "<img src='/icons/e-cigarette.png' width='35' height='35'/>",
+    tobacco: "<img src='/icons/tobacco.png' width='35' height='35'/>",
+    bakery: "<img src='/icons/bakery.png' width='35' height='35'/>",
+    convenience: "<img src='/icons/convenience.png' width='35' height='35'/>",
+    cafe: "<img src='/icons/cafe.png' width='35' height='35'/>",
+    car_repair: "<img src='/icons/car_repair.png' width='35' height='35'/>",
+    car: "<img src='/icons/car.png' width='35' height='35'/>",
+    supermarket: "<img src='/icons/supermarket.png' width='35' height='35'/>",
+    shoes: "<img src='/icons/shoes.png' width='35' height='35'/>",
+    car_wash: "<img src='/icons/car_wash.png' width='35' height='35'/>",
+    optician: "<img src='/icons/optician.png' width='35' height='35'/>",
+    butcher: "<img src='/icons/butcher.png' width='35' height='35'/>",
+    sports: "<img src='/icons/sports.png' width='35' height='35'/>",
+    books: "<img src='/icons/books.png' width='35' height='35'/>",
+    toys: "<img src='/icons/toys.png' width='35' height='35'/>",
+    nightclub: "<img src='/icons/nightclub.png' width='35' height='35'/>",
+    cinema: "<img src='/icons/cinema.png' width='35' height='35'/>",
+    educational_institution:
+      "<img src='/icons/educational_institution.png' width='35' height='35'/>",
+  };
+
+  return iconMap[primaryType] || "🏪";
+}
+
+// =============================================
+// Trouver le commerce le plus proche
+// =============================================
+function findNearestCommerce(lat, lng) {
+  const clickCoords = [lat, lng];
+  let nearest = null;
+  let minDistance = Infinity;
+
+  commercesPau.forEach((item) => {
+    // Adapter à la structure du JSON pau.json
+    const commerceLat = item.geo_point_2d.lat;
+    const commerceLng = item.geo_point_2d.lon;
+    const distance =
+      calculateDistance(clickCoords, [commerceLat, commerceLng]) * 1000; // Convertir en mètres
+
+    if (distance < minDistance) {
+      minDistance = distance;
+      const commerceIcon = getCommerceIcon(item.type);
+      nearest = {
+        name: item.name || "Commerce inconnu",
+        coords: [commerceLat, commerceLng],
+        type: item.type ? item.type.join(", ") : "inconnu",
+        icon: commerceIcon,
+        address: item.address || "Adresse inconnue",
+      };
+    }
+  });
+
+  return { commerce: nearest, distance: minDistance };
+}
+
+// =============================================
+// Afficher une phase spécifique (map, maze, etc.)
+// =============================================
 function showPhase(phase) {
+  // Désactiver tous les boutons et conteneurs
   document
     .querySelectorAll(".phase-btn")
     .forEach((btn) => btn.classList.remove("active"));
@@ -142,67 +256,93 @@ function showPhase(phase) {
     .querySelectorAll('[id$="-container"]')
     .forEach((container) => container.classList.remove("active"));
 
+  // Activer le bouton et le conteneur sélectionnés
   event.target.classList.add("active");
   document.getElementById(phase + "-container").classList.add("active");
 
+  // Réinitialiser la taille de la carte si nécessaire
   if (phase === "map" && map) {
     setTimeout(() => map.invalidateSize(), 100);
   }
 }
 
-function addWaypoint() {
-  if (waypoints.length < predefinedWaypoints.length) {
-    const wp = predefinedWaypoints[waypoints.length];
-    addWaypointAt(wp[0], wp[1], wp[2], wp[3]);
-    updateStatus("map", `Point de passage "${wp[2]}" ajouté !`, "success");
-  } else {
-    updateStatus("map", "Tous les points de passage ont été ajoutés !", "info");
-  }
-}
+// =============================================
+// Ajouter un point de passage à la carte
+// =============================================
+function addWaypointAt(lat, lng, name, icon, index, commerceType = null) {
+  // Créer un waypoint générique avec l'icône fournie
+  const waypoint = {
+    icon: {
+      className: "waypoint-marker",
+      html: `<div class="marker-content">${icon}</div>`,
 
-function addWaypointAt(lat, lng, name, emoji) {
-  const waypointIcon = L.divIcon({
-    html: `<div style="background: linear-gradient(45deg, #FFD700, #FFA500); border: 3px solid #DAA520; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 0 12px rgba(255, 215, 0, 0.7);">${emoji}</div>`,
-    iconSize: [35, 35],
-    iconAnchor: [17, 17],
-    popupAnchor: [0, -17],
-    className: "custom-marker",
-  });
+      iconSize: [40, 40],
+      iconAnchor: [20, 20],
+    },
+    popupContent: `<div style="text-align: center;"><div class="marker-content">${icon}</div><h4>${name}</h4><p>Point de passage #${index}</p><p><em>Coords: ${lat.toFixed(
+      4
+    )}, ${lng.toFixed(4)}</em></p></div>`,
+  };
 
+  const waypointIcon = L.divIcon(waypoint.icon);
   const marker = L.marker([lat, lng], { icon: waypointIcon })
     .addTo(map)
-    .bindPopup(
-      `
-                    <div style="text-align: center;">
-                        <h4>${emoji} ${name}</h4>
-                        <p>Point de passage #${waypoints.length + 1}</p>
-                        <p><em>Coords: ${lat.toFixed(4)}, ${lng.toFixed(
-        4
-      )}</em></p>
-                    </div>
-                `,
-      {
-        maxWidth: 200,
-      }
-    );
+    .bindPopup(waypoint.popupContent, { maxWidth: 200 });
 
+  // Stocker les informations du point de passage
   waypoints.push({
     marker: marker,
     coords: [lat, lng],
     name: name,
-    emoji: emoji,
+    icon: icon,
+    commerceType: commerceType, // Ajouter le type de commerce
   });
   waypointMarkers.push(marker);
 
-  // Ajouter un cercle autour du point
-  L.circle([lat, lng], {
-    color: "#FFD700",
-    fillColor: "#FFD700",
+  // Ajouter un cercle autour du point pour une meilleure visibilité
+  const circle = L.circle([lat, lng], {
+    color: "transparent",
+    fillColor: "transparent",
     fillOpacity: 0.1,
-    radius: 100,
+    radius: 50,
   }).addTo(map);
+
+  waypointCircles.push(circle);
 }
 
+// =============================================
+// Effacer tous les waypoints de la carte
+// =============================================
+function clearWaypoints() {
+  // Supprimer les marqueurs des waypoints de la carte
+  waypointMarkers.forEach((marker) => {
+    map.removeLayer(marker);
+  });
+
+  // Supprimer les cercles des waypoints de la carte
+  waypointCircles.forEach((circle) => {
+    map.removeLayer(circle);
+  });
+
+  // Réinitialiser les listes de waypoints, marqueurs et cercles
+  waypoints = [];
+  waypointMarkers = [];
+  waypointCircles = [];
+
+  // Effacer le chemin actuel si nécessaire
+  clearPath();
+
+  // Mettre à jour le statut
+  updateStatus(
+    "map",
+    "Tous les points de passage ont été effacés !",
+    "success"
+  );
+}
+
+// =============================================
+// Trouver le chemin le plus court entre les points de passage
+// =============================================
 function findShortestPath() {
   if (waypoints.length === 0) {
     updateStatus("map", "Ajoutez au moins un point de passage !", "error");
@@ -220,11 +360,16 @@ function findShortestPath() {
 
   setTimeout(() => {
     // Construire la liste des waypoints pour le routage
-    let routeWaypoints = [L.latLng(kaamelottCoords[0], kaamelottCoords[1])];
+    let routeWaypoints = [
+      L.latLng(
+        appData.mainLocations[0].coords[0],
+        appData.mainLocations[0].coords[1]
+      ),
+    ];
 
     // Algorithme du plus proche voisin pour optimiser l'ordre des waypoints
     let unvisitedWaypoints = [...waypoints];
-    let currentPos = kaamelottCoords;
+    let currentPos = appData.mainLocations[0].coords;
 
     while (unvisitedWaypoints.length > 0) {
       let nearest = unvisitedWaypoints[0];
@@ -249,64 +394,92 @@ function findShortestPath() {
     }
 
     // Ajouter la destination finale
-    routeWaypoints.push(L.latLng(labyrinthCoords[0], labyrinthCoords[1]));
+    routeWaypoints.push(
+      L.latLng(
+        appData.mainLocations[1].coords[0],
+        appData.mainLocations[1].coords[1]
+      )
+    );
 
     // Créer le contrôle de routage Leaflet
     routingControl = L.Routing.control({
       waypoints: routeWaypoints,
+      show: false,
       routeWhileDragging: false,
       addWaypoints: false,
       createMarker: function () {
         return null;
-      }, // Pas de marqueurs supplémentaires
+      },
       lineOptions: {
         styles: [
           {
-            color: "#4169E1",
-            weight: 6,
+            color: "var(--gold)",
+            weight: 2,
             opacity: 0.8,
             dashArray: "10, 5",
           },
         ],
       },
-      show: true,
-      collapsible: true,
+      collapsible: false,
       router: L.Routing.osrmv1({
         serviceUrl: "https://router.project-osrm.org/route/v1",
-        profile: "walking", // Utiliser le profil piéton
+        profile: "walking",
       }),
     }).addTo(map);
 
-    // Écouter l'événement de routage terminé
+    // Gérer la réponse du routage
     routingControl.on("routesfound", function (e) {
       const routes = e.routes;
       const summary = routes[0].summary;
+
+      // Distance en km
       const distance = (summary.totalDistance / 1000).toFixed(2);
-      const time = Math.round(summary.totalTime / 60);
+
+      // Vitesse de marche en km/h
+      const speed = 5;
+
+      // Temps en heures (distance ÷ vitesse)
+      const timeHours = distance / speed;
+
+      // Conversion en heures et minutes
+      const hours = Math.floor(timeHours);
+      const minutes = Math.round((timeHours - hours) * 60);
+
+      // Construire la chaîne de temps
+      let timeString = "";
+      if (hours > 0) {
+        timeString += `${hours} heure${hours > 1 ? "s" : ""}`;
+        if (minutes > 0) {
+          timeString += ` et ${minutes} min`;
+        }
+      } else {
+        timeString = `${minutes} min`;
+      }
 
       updateStatus(
         "map",
-        `🎯 Chemin optimal calculé ! Distance: ${distance} km | Temps de marche: ${time} min`,
+        `🎯 Chemin optimal calculé ! Distance: ${distance} km | Temps de marche: ${timeString}`,
         "success"
       );
     });
 
+    // Gérer les erreurs de routage
     routingControl.on("routingerror", function (e) {
       updateStatus(
         "map",
         "Erreur lors du calcul du chemin. Utilisation du chemin direct.",
         "error"
       );
-      // Fallback vers notre méthode manuelle
       createManualRoute(routeWaypoints);
     });
   }, 1000);
 }
 
+// =============================================
+// Créer une route manuelle si le routage échoue
+// =============================================
 function createManualRoute(waypoints) {
-  // Créer une ligne manuelle si le routage OSRM échoue
   const pathCoords = waypoints.map((wp) => [wp.lat, wp.lng]);
-
   customRoute = L.polyline(pathCoords, {
     color: "#4169E1",
     weight: 6,
@@ -314,7 +487,6 @@ function createManualRoute(waypoints) {
     dashArray: "10, 5",
   }).addTo(map);
 
-  // Calculer la distance totale
   let totalDistance = 0;
   for (let i = 0; i < pathCoords.length - 1; i++) {
     totalDistance += calculateDistance(pathCoords[i], pathCoords[i + 1]);
@@ -327,6 +499,9 @@ function createManualRoute(waypoints) {
   );
 }
 
+// =============================================
+// Effacer le chemin actuel
+// =============================================
 function clearPath() {
   if (routingControl) {
     map.removeControl(routingControl);
@@ -338,41 +513,246 @@ function clearPath() {
   }
 }
 
+// =============================================
+// Calculer la distance entre deux coordonnées (en km)
+// =============================================
 function calculateDistance(coord1, coord2) {
-  // Utiliser la méthode de distance de Leaflet (plus précise)
   const latlng1 = L.latLng(coord1[0], coord1[1]);
   const latlng2 = L.latLng(coord2[0], coord2[1]);
-  return latlng1.distanceTo(latlng2) / 1000; // Convertir en kilomètres
+  return latlng1.distanceTo(latlng2) / 1000;
 }
 
-function centerOnKaamelott() {
-  map.setView(kaamelottCoords, 15);
+// =============================================
+// Fonctions de centrage de la carte
+// =============================================
+function centerKaamelott() {
+  map.setView(appData.mainLocations[0].coords, 15);
   kaamelottMarker.openPopup();
 }
 
-// Génération du labyrinthe
+function centerLabyrinthe() {
+  map.setView(appData.mainLocations[1].coords, 15);
+  labyrinthMarker.openPopup();
+}
+
+function centerPau() {
+  map.setView([43.29614574576827, -0.3717861445392325], 15);
+}
+
+// =============================================
+// Centrer sur le commerce le plus proche d'un type donné
+// =============================================
+function centerOnCommerceType(commerceType) {
+  // Obtenir la position actuelle de la carte
+  const currentCenter = map.getCenter();
+  const currentPos = [currentCenter.lat, currentCenter.lng];
+
+  // D'abord, vérifier s'il y a un waypoint existant du même type à proximité (dans un rayon de 500m)
+  const nearbyWaypoint = findNearbyWaypointOfType(
+    currentPos,
+    commerceType,
+    500
+  );
+
+  if (nearbyWaypoint) {
+    // Si un waypoint du même type existe à proximité, centrer dessus et ouvrir son popup
+    map.setView(nearbyWaypoint.coords, 17);
+    nearbyWaypoint.marker.openPopup();
+
+    updateStatus(
+      "map",
+      `📍 Waypoint "${nearbyWaypoint.name}" trouvé à proximité`,
+      "info"
+    );
+    return;
+  }
+
+  // Sinon, trouver le commerce le plus proche du type demandé
+  let nearestCommerce = null;
+  let minDistance = Infinity;
+
+  commercesPau.forEach((item) => {
+    // Vérifier si ce commerce correspond au type recherché
+    if (item.type && item.type.includes(commerceType)) {
+      const commerceLat = item.geo_point_2d.lat;
+      const commerceLng = item.geo_point_2d.lon;
+      const distance = calculateDistance(currentPos, [
+        commerceLat,
+        commerceLng,
+      ]);
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearestCommerce = {
+          name: item.name || "Commerce inconnu",
+          coords: [commerceLat, commerceLng],
+          type: item.type.join(", "),
+          address: item.address || "Adresse inconnue",
+          primaryType: item.type[0], // Garder le type principal pour l'icône
+        };
+      }
+    }
+  });
+
+  if (nearestCommerce) {
+    // Centrer sur le commerce trouvé
+    map.setView(nearestCommerce.coords, 17);
+
+    // Créer un marqueur temporaire pour montrer le commerce
+    const tempIcon = L.divIcon({
+      className: "temp-marker",
+      html: `<div style="background: #FF6B6B; color: white; padding: 5px; border-radius: 50%; text-align: center; font-weight: bold;">!</div>`,
+      iconSize: [30, 30],
+      iconAnchor: [15, 15],
+    });
+
+    const tempMarker = L.marker(nearestCommerce.coords, {
+      icon: tempIcon,
+    }).addTo(map);
+
+    // Utiliser le type principal pour obtenir la bonne icône
+    const correctIcon = getCommerceIcon([nearestCommerce.primaryType]);
+
+    // Créer le popup avec les boutons d'action
+    const popupContent = `
+      <div style="text-align: center;">
+      <img src='/icons/${
+        nearestCommerce.primaryType
+      }.png' width='35' height='35'/>
+        <h4>${nearestCommerce.name}</h4>
+        <p><strong>Type:</strong> ${nearestCommerce.type}</p>
+        <p><strong>Distance:</strong> ${(minDistance * 1000).toFixed(0)}m</p>
+        <p><em>${nearestCommerce.address}</em></p>
+        <div style="margin-top: 10px;">
+          <button onclick="addWaypointFromModal('${
+            nearestCommerce.coords[0]
+          }', '${nearestCommerce.coords[1]}', '${nearestCommerce.name.replace(
+      /'/g,
+      "\\'"
+    )}', '${correctIcon.replace(/'/g, "\\'")}', '${
+      nearestCommerce.primaryType
+    }')" 
+                  style="background: #32CD32; color: white; border: none; padding: 8px 12px; margin: 2px; border-radius: 4px; cursor: pointer;">
+            Ajouter waypoint
+          </button>
+          <button onclick="removeWarningMarker()" 
+                  style="background: #FF6B6B; color: white; border: none; padding: 8px 12px; margin: 2px; border-radius: 4px; cursor: pointer;">
+            Ne pas ajouter
+          </button>
+        </div>
+      </div>
+    `;
+
+    tempMarker
+      .bindPopup(popupContent, {
+        maxWidth: 250,
+        closeButton: false,
+        autoClose: false,
+        closeOnClick: false,
+      })
+      .openPopup();
+
+    // Stocker le marqueur temporaire globalement pour pouvoir le supprimer
+    window.currentWarningMarker = tempMarker;
+
+    updateStatus(
+      "map",
+      `📍 Commerce trouvé: ${nearestCommerce.name} (${(
+        minDistance * 1000
+      ).toFixed(0)}m)`,
+      "success"
+    );
+  } else {
+    updateStatus(
+      "map",
+      `❌ Aucun commerce de type "${commerceType}" trouvé à Pau.`,
+      "error"
+    );
+  }
+}
+
+// =============================================
+// Trouver un waypoint existant à proximité du même type
+// =============================================
+function findNearbyWaypointOfType(currentPos, searchType, radiusMeters) {
+  for (let waypoint of waypoints) {
+    const distance = calculateDistance(currentPos, waypoint.coords) * 1000; // Convertir en mètres
+
+    if (distance <= radiusMeters) {
+      // Vérifier si ce waypoint correspond au type recherché
+      // On peut déduire le type depuis l'icône ou le nom du waypoint
+      if (waypointMatchesType(waypoint, searchType)) {
+        return waypoint;
+      }
+    }
+  }
+  return null;
+}
+
+// =============================================
+// Vérifier si un waypoint correspond à un type donné
+// =============================================
+function waypointMatchesType(waypoint, searchType) {
+  // Logique simplifiée basée sur l'icône ou le nom
+  // Cette fonction peut être améliorée selon vos besoins spécifiques
+  const waypointIcon = waypoint.icon;
+  const expectedIcon = getCommerceIcon([searchType]);
+
+  // Comparaison basique des icônes
+  return waypointIcon.includes(searchType) || waypointIcon === expectedIcon;
+}
+
+// =============================================
+// Ajouter un waypoint depuis la modal
+// =============================================
+function addWaypointFromModal(lat, lng, name, icon) {
+  // Convertir les coordonnées en nombres
+  const latitude = parseFloat(lat);
+  const longitude = parseFloat(lng);
+
+  // Ajouter le waypoint
+  addWaypointAt(latitude, longitude, name, icon, waypoints.length + 1);
+
+  // Supprimer le marqueur d'avertissement
+  removeWarningMarker();
+
+  updateStatus("map", `✅ Waypoint ajouté : ${name}`, "success");
+}
+
+// =============================================
+// Supprimer le marqueur d'avertissement
+// =============================================
+function removeWarningMarker() {
+  if (window.currentWarningMarker) {
+    map.removeLayer(window.currentWarningMarker);
+    window.currentWarningMarker = null;
+  }
+}
+
+// =============================================
+// Générer un labyrinthe aléatoire
+// =============================================
 function generateMaze() {
+  const settings = appData.mazeSettings;
+  mazeSize = settings.size;
   updateStatus("maze", "Génération du labyrinthe mystérieux...", "loading");
 
   setTimeout(() => {
+    // Initialiser le labyrinthe avec des murs
     maze = [];
-
-    // Initialiser avec des murs
     for (let i = 0; i < mazeSize; i++) {
       maze[i] = [];
       for (let j = 0; j < mazeSize; j++) {
-        maze[i][j] = 1; // 1 = mur, 0 = chemin
+        maze[i][j] = 1; // 1 = mur
       }
     }
 
-    // Algorithme de génération (DFS avec backtracking)
-    generateMazeRecursive(1, 1);
+    // Générer le labyrinthe récursivement
+    generateMazeRecursive(settings.start.x, settings.start.y);
+    maze[settings.start.x][settings.start.y] = 0; // 0 = chemin
+    maze[settings.end.x][settings.end.y] = 0;
 
-    // Assurer l'entrée et la sortie
-    maze[1][1] = 0; // Entrée
-    maze[mazeSize - 2][mazeSize - 2] = 0; // Sortie
-
-    renderMaze();
+    renderMaze(); // Afficher le labyrinthe
     updateStatus(
       "maze",
       "Labyrinthe généré ! Résolvez-le pour trouver le trésor.",
@@ -381,21 +761,25 @@ function generateMaze() {
   }, 1000);
 }
 
+// =============================================
+// Générer le labyrinthe de manière récursive
+// =============================================
 function generateMazeRecursive(x, y) {
   const directions = [
-    [2, 0],
-    [0, 2],
-    [-2, 0],
-    [0, -2],
+    [2, 0], // Droite
+    [0, 2], // Bas
+    [-2, 0], // Gauche
+    [0, -2], // Haut
   ];
-  directions.sort(() => Math.random() - 0.5); // Mélanger
+  directions.sort(() => Math.random() - 0.5); // Mélanger les directions
 
-  maze[x][y] = 0;
+  maze[x][y] = 0; // Marquer la case actuelle comme chemin
 
   for (let [dx, dy] of directions) {
     const nx = x + dx;
     const ny = y + dy;
 
+    // Vérifier si la case voisine est valide
     if (
       nx >= 1 &&
       nx < mazeSize - 1 &&
@@ -403,12 +787,15 @@ function generateMazeRecursive(x, y) {
       ny < mazeSize - 1 &&
       maze[nx][ny] === 1
     ) {
-      maze[x + dx / 2][y + dy / 2] = 0; // Casser le mur entre
+      maze[x + dx / 2][y + dy / 2] = 0; // Ouvrir un passage
       generateMazeRecursive(nx, ny);
     }
   }
 }
 
+// =============================================
+// Afficher le labyrinthe dans le DOM
+// =============================================
 function renderMaze() {
   const mazeElement = document.getElementById("maze");
   mazeElement.innerHTML = "";
@@ -427,9 +814,16 @@ function renderMaze() {
         cell.classList.add("path");
       }
 
-      if (i === 1 && j === 1) {
+      // Marquer le départ et l'arrivée
+      if (
+        i === appData.mazeSettings.start.x &&
+        j === appData.mazeSettings.start.y
+      ) {
         cell.classList.add("start");
-      } else if (i === mazeSize - 2 && j === mazeSize - 2) {
+      } else if (
+        i === appData.mazeSettings.end.x &&
+        j === appData.mazeSettings.end.y
+      ) {
         cell.classList.add("end");
       }
 
@@ -438,18 +832,26 @@ function renderMaze() {
   }
 }
 
+// =============================================
+// Résoudre le labyrinthe avec l'algorithme A*
+// =============================================
 function solveMaze() {
   updateStatus("maze", "Résolution du labyrinthe en cours...", "loading");
 
   setTimeout(() => {
-    // Algorithme A* pour résoudre le labyrinthe
-    const start = { x: 1, y: 1 };
-    const end = { x: mazeSize - 2, y: mazeSize - 2 };
+    const start = {
+      x: appData.mazeSettings.start.x,
+      y: appData.mazeSettings.start.y,
+    };
+    const end = {
+      x: appData.mazeSettings.end.x,
+      y: appData.mazeSettings.end.y,
+    };
 
     solutionPath = findPathAStar(start, end);
 
     if (solutionPath.length > 0) {
-      // Afficher la solution
+      // Colorier le chemin solution
       solutionPath.forEach(({ x, y }) => {
         const cell = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
         if (
@@ -476,6 +878,9 @@ function solveMaze() {
   }, 1000);
 }
 
+// =============================================
+// Trouver le chemin avec l'algorithme A*
+// =============================================
 function findPathAStar(start, end) {
   const openSet = [start];
   const closedSet = [];
@@ -487,7 +892,7 @@ function findPathAStar(start, end) {
   fScore[`${start.x},${start.y}`] = heuristic(start, end);
 
   while (openSet.length > 0) {
-    // Trouver le nœud avec le plus petit fScore
+    // Trouver le nœud avec le score f le plus bas
     let current = openSet[0];
     let currentIndex = 0;
 
@@ -501,8 +906,8 @@ function findPathAStar(start, end) {
       }
     }
 
+    // Si on a atteint la fin, reconstruire le chemin
     if (current.x === end.x && current.y === end.y) {
-      // Reconstruire le chemin
       const path = [];
       let temp = current;
       while (temp) {
@@ -515,8 +920,8 @@ function findPathAStar(start, end) {
     openSet.splice(currentIndex, 1);
     closedSet.push(current);
 
+    // Explorer les voisins
     const neighbors = getNeighbors(current);
-
     for (let neighbor of neighbors) {
       if (
         closedSet.some((node) => node.x === neighbor.x && node.y === neighbor.y)
@@ -546,17 +951,23 @@ function findPathAStar(start, end) {
   return [];
 }
 
+// =============================================
+// Heuristique pour A* (distance de Manhattan)
+// =============================================
 function heuristic(a, b) {
   return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 }
 
+// =============================================
+// Récupérer les voisins valides d'une case
+// =============================================
 function getNeighbors(node) {
   const neighbors = [];
   const directions = [
-    [1, 0],
-    [0, 1],
-    [-1, 0],
-    [0, -1],
+    [1, 0], // Droite
+    [0, 1], // Bas
+    [-1, 0], // Gauche
+    [0, -1], // Haut
   ];
 
   for (let [dx, dy] of directions) {
@@ -571,6 +982,9 @@ function getNeighbors(node) {
   return neighbors;
 }
 
+// =============================================
+// Faire avancer Arthur dans le labyrinthe
+// =============================================
 function startArthurJourney() {
   if (solutionPath.length === 0) {
     updateStatus("maze", "Résolvez d'abord le labyrinthe !", "error");
@@ -578,9 +992,13 @@ function startArthurJourney() {
   }
 
   resetMaze();
-  arthurPosition = { x: 1, y: 1 };
-
-  const cell = document.querySelector(`[data-x="1"][data-y="1"]`);
+  arthurPosition = {
+    x: appData.mazeSettings.start.x,
+    y: appData.mazeSettings.start.y,
+  };
+  const cell = document.querySelector(
+    `[data-x="${arthurPosition.x}"][data-y="${arthurPosition.y}"]`
+  );
   cell.classList.add("arthur");
 
   updateStatus(
@@ -589,7 +1007,6 @@ function startArthurJourney() {
     "loading"
   );
 
-  // Animer le déplacement d'Arthur
   let stepIndex = 1;
   const interval = setInterval(() => {
     if (stepIndex >= solutionPath.length) {
@@ -602,14 +1019,13 @@ function startArthurJourney() {
       return;
     }
 
-    // Enlever Arthur de sa position actuelle
+    // Déplacer Arthur
     const oldCell = document.querySelector(
       `[data-x="${arthurPosition.x}"][data-y="${arthurPosition.y}"]`
     );
     oldCell.classList.remove("arthur");
     oldCell.classList.add("visited");
 
-    // Déplacer Arthur
     arthurPosition = solutionPath[stepIndex];
     const newCell = document.querySelector(
       `[data-x="${arthurPosition.x}"][data-y="${arthurPosition.y}"]`
@@ -620,6 +1036,9 @@ function startArthurJourney() {
   }, 500);
 }
 
+// =============================================
+// Réinitialiser le labyrinthe
+// =============================================
 function resetMaze() {
   document.querySelectorAll(".maze-cell").forEach((cell) => {
     cell.classList.remove("arthur", "visited", "solution");
@@ -628,8 +1047,13 @@ function resetMaze() {
   arthurPosition = null;
 }
 
+// =============================================
+// Mettre à jour le statut (message d'information)
+// =============================================
 function updateStatus(phase, message, type = "info") {
   const statusElement = document.getElementById(phase + "-status");
-  statusElement.textContent = message;
-  statusElement.className = "status " + type;
+  if (statusElement) {
+    statusElement.textContent = message;
+    statusElement.className = "status " + type;
+  }
 }
