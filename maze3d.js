@@ -15,12 +15,16 @@ let solutionMeshes = [];
 let treasureGroup;
 let directionalLight, ambientLight;
 
-// Variables pour contrôles fluides
+// Variables pour contrôles fluides et caméra 3ème personne
 let keys = {};
 let isMoving = false;
 let moveSpeed = 0.25;
 let cameraRotation = { x: 0, y: 0 };
+let thirdPersonRotation = { x: 0, y: 0 };
 let isMouseLocked = false;
+
+// Variables pour la minimap
+let minimapCamera, minimapRenderer, minimapContainer;
 
 // =============================================
 // Initialisation du labyrinthe 3D
@@ -64,6 +68,9 @@ function initMaze3D() {
   // Éclairage
   setupLighting();
 
+  // Initialiser la minimap
+  initMinimap();
+
   // Générer le labyrinthe initial
   generateMaze3D();
 
@@ -85,6 +92,49 @@ function createCanvas() {
 }
 
 // =============================================
+// Initialisation de la minimap
+// =============================================
+function initMinimap() {
+  // Créer le conteneur de la minimap
+  minimapContainer = document.createElement("div");
+  minimapContainer.id = "minimap-container";
+  minimapContainer.style.cssText = `
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 200px;
+    height: 200px;
+    border: 3px solid #ffd700;
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    z-index: 1000;
+  `;
+
+  const container = document.getElementById("maze3d-container");
+  container.appendChild(minimapContainer);
+
+  // Créer la caméra de la minimap
+  minimapCamera = new THREE.OrthographicCamera(
+    -mazeSize3D / 2,
+    mazeSize3D / 2,
+    mazeSize3D / 2,
+    -mazeSize3D / 2,
+    1,
+    1000
+  );
+  minimapCamera.position.set(0, 50, 0);
+  minimapCamera.lookAt(0, 0, 0);
+
+  // Créer le renderer de la minimap
+  minimapRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  minimapRenderer.setSize(200, 200);
+  minimapRenderer.setClearColor(0x000000, 0.8);
+  minimapContainer.appendChild(minimapRenderer.domElement);
+}
+
+// =============================================
 // Configuration de l'éclairage luxueux
 // =============================================
 function setupLighting() {
@@ -93,7 +143,7 @@ function setupLighting() {
   scene.add(ambientLight);
 
   // Lumière directionnelle principale (blanche)
-  directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  directionalLight = new THREE.DirectionalLight(0xffffff, 10);
   directionalLight.position.set(30, 40, 20);
   directionalLight.castShadow = true;
   directionalLight.shadow.mapSize.width = 2048;
@@ -165,14 +215,84 @@ function buildMaze3D() {
 }
 
 // =============================================
-// Création d'Arthur luxueux
+// Création d'Arthur avec modèle 3D
 // =============================================
 function createArthur() {
   if (arthurMesh) {
     scene.remove(arthurMesh);
   }
 
+  // Créer un groupe pour Arthur
   arthurMesh = new THREE.Group();
+
+  // Charger le modèle 3D
+  const loader = new THREE.GLTFLoader();
+  loader.load(
+    "/models/knight3d.glb",
+    function (gltf) {
+      const model = gltf.scene;
+
+      // Calculer la taille du modèle
+      const box = new THREE.Box3().setFromObject(model);
+      const size = box.getSize(new THREE.Vector3());
+      const maxDimension = Math.max(size.x, size.y, size.z);
+
+      // Redimensionner le modèle
+      const targetHeight = 1.8;
+      const scale = targetHeight / maxDimension;
+      model.scale.setScalar(scale);
+
+      // Centrer le modèle
+      box.setFromObject(model);
+      const center = box.getCenter(new THREE.Vector3());
+      model.position.sub(center);
+
+      // Positionner le modèle au sol
+      const minY = box.min.y * scale;
+      model.position.y = -minY;
+
+      // Configurer les ombres
+      model.traverse(function (child) {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          if (child.material) {
+            child.material.needsUpdate = true;
+          }
+        }
+      });
+
+      // Ajouter le modèle au groupe Arthur
+      arthurMesh.add(model);
+
+      // Stocker une référence au modèle avec l'état d'animation
+      arthurMesh.userData.model = model;
+      arthurMesh.userData.model.userData = {
+        isAnimating: true,
+      };
+
+      console.log("Modèle Arthur chargé avec succès");
+    },
+    function (progress) {
+      console.log(
+        "Chargement du modèle Arthur:",
+        (progress.loaded / progress.total) * 100 + "%"
+      );
+    },
+    function (error) {
+      console.error("Erreur lors du chargement du modèle Arthur:", error);
+      createFallbackArthur();
+    }
+  );
+
+  // Ajouter le groupe à la scène
+  scene.add(arthurMesh);
+  updateArthurPosition();
+}
+
+// Fonction de fallback en cas d'échec du chargement
+function createFallbackArthur() {
+  console.log("Utilisation du modèle Arthur de fallback");
 
   // Corps doré
   const bodyGeometry = new THREE.CylinderGeometry(0.2, 0.25, 1.4, 12);
@@ -210,9 +330,6 @@ function createArthur() {
   crown.position.y = 1.95;
   crown.castShadow = true;
   arthurMesh.add(crown);
-
-  scene.add(arthurMesh);
-  updateArthurPosition();
 }
 
 // =============================================
@@ -225,73 +342,121 @@ function createTreasure() {
 
   treasureGroup = new THREE.Group();
 
-  // Coffre noir luxueux
-  const chestGeometry = new THREE.BoxGeometry(0.7, 0.4, 0.5);
-  const chestMaterial = new THREE.MeshPhongMaterial({
-    color: 0x1a1a1a,
-    shininess: 80,
-    specular: 0x666666,
-  });
-  const chest = new THREE.Mesh(chestGeometry, chestMaterial);
-  chest.position.y = 0.2;
-  chest.castShadow = true;
-  treasureGroup.add(chest);
+  // Charger le modèle 3D du coffre
+  const loader = new THREE.GLTFLoader();
+  loader.load(
+    "/models/chest.glb",
+    function (gltf) {
+      const model = gltf.scene;
 
-  // Couvercle avec bordures dorées
-  const lidGeometry = new THREE.BoxGeometry(0.7, 0.08, 0.5);
-  const lidMaterial = new THREE.MeshPhongMaterial({
-    color: 0x2a2a2a,
-    shininess: 100,
-    specular: 0x888888,
-  });
-  const lid = new THREE.Mesh(lidGeometry, lidMaterial);
-  lid.position.y = 0.44;
-  lid.castShadow = true;
-  treasureGroup.add(lid);
+      // Calculer la taille du modèle
+      const box = new THREE.Box3().setFromObject(model);
+      const size = box.getSize(new THREE.Vector3());
+      const maxDimension = Math.max(size.x, size.y, size.z);
 
-  // Bordures dorées
-  const borderGeometry = new THREE.BoxGeometry(0.72, 0.1, 0.52);
-  const borderMaterial = new THREE.MeshPhongMaterial({
-    color: 0xffd700,
-    shininess: 150,
-    specular: 0xffffff,
-    emissive: 0x221100,
-  });
-  const border = new THREE.Mesh(borderGeometry, borderMaterial);
-  border.position.y = 0.48;
-  border.castShadow = true;
-  treasureGroup.add(border);
+      // Redimensionner le modèle
+      const targetHeight = 0.9; // Hauteur cible
+      const scale = targetHeight / maxDimension;
+      model.scale.setScalar(scale);
 
-  // Particules dorées flottantes
-  for (let i = 0; i < 12; i++) {
-    const gemGeometry = new THREE.SphereGeometry(0.04, 8, 8);
-    const gemMaterial = new THREE.MeshPhongMaterial({
-      color: 0xffd700,
-      shininess: 200,
-      specular: 0xffffff,
-      emissive: 0xffd700,
-      transparent: true,
-      opacity: 0.9,
-    });
-    const gem = new THREE.Mesh(gemGeometry, gemMaterial);
-    const angle = (i / 12) * Math.PI * 2;
-    gem.position.set(
-      Math.cos(angle) * 1.0,
-      0.6 + Math.sin(angle * 3) * 0.15,
-      Math.sin(angle) * 1.0
-    );
-    treasureGroup.add(gem);
-  }
+      // Centrer le modèle
+      box.setFromObject(model);
+      const center = box.getCenter(new THREE.Vector3());
+      model.position.sub(center);
 
-  const treasureX = mazeSize3D - 2;
-  const treasureZ = mazeSize3D - 2;
-  treasureGroup.position.set(
-    treasureX - mazeSize3D / 2,
-    0,
-    treasureZ - mazeSize3D / 2
+      // Positionner le modèle au sol
+      const minY = box.min.y * scale;
+      model.position.y = -minY + 0.25;
+
+      // Configurer les ombres
+      model.traverse(function (child) {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          if (child.material) {
+            child.material.needsUpdate = true;
+          }
+        }
+      });
+
+      // Ajouter le modèle au groupe
+      treasureGroup.add(model);
+
+      // Stocker une référence au modèle pour l'animation
+      treasureGroup.userData.model = model;
+
+      // Positionner le groupe trésor
+      const treasureX = mazeSize3D - 2;
+      const treasureZ = mazeSize3D - 2;
+      treasureGroup.position.set(
+        treasureX - mazeSize3D / 2,
+        0,
+        treasureZ - mazeSize3D / 2
+      );
+
+      scene.add(treasureGroup);
+
+      // Animation d'ouverture/fermeture du coffre
+      animateChestOpening();
+
+      console.log("Modèle de trésor chargé avec succès");
+    },
+    function (progress) {
+      console.log(
+        "Chargement du modèle de trésor:",
+        (progress.loaded / progress.total) * 100 + "%"
+      );
+    },
+    function (error) {
+      console.error("Erreur lors du chargement du modèle de trésor:", error);
+      createFallbackTreasure();
+    }
   );
+}
 
-  scene.add(treasureGroup);
+// Fonction d'animation du coffre
+function animateChestOpening() {
+  if (!treasureGroup || !treasureGroup.userData.model) return;
+
+  const model = treasureGroup.userData.model;
+  const lid = model.getObjectByName("lid"); // Remplacez "lid" par le nom de l'objet dans votre modèle
+
+  if (lid) {
+    // Animation d'ouverture/fermeture avec GSAP
+    gsap.to(lid.rotation, {
+      x: 0.8, // Angle d'ouverture (ajustez selon votre modèle)
+      duration: 2,
+      ease: "power2.inOut",
+      yoyo: true,
+      repeat: -1,
+      delay: 1,
+    });
+
+    // Animation de scintillement des particules
+    model.traverse(function (child) {
+      if (child.name.includes("gem") || child.name.includes("particle")) {
+        gsap.to(child.position, {
+          y: "+=0.1",
+          duration: 2,
+          ease: "sine.inOut",
+          yoyo: true,
+          repeat: -1,
+          delay: Math.random() * 2,
+        });
+
+        gsap.to(child.scale, {
+          x: 1.1,
+          y: 1.1,
+          z: 1.1,
+          duration: 1.5,
+          ease: "sine.inOut",
+          yoyo: true,
+          repeat: -1,
+          delay: Math.random() * 1.5,
+        });
+      }
+    });
+  }
 }
 
 // =============================================
@@ -300,6 +465,7 @@ function createTreasure() {
 function setViewMode(mode) {
   viewMode = mode;
   cameraRotation = { x: 0, y: 0 };
+  thirdPersonRotation = { x: 0, y: 0 };
 
   const canvas = document.getElementById("maze3d-canvas");
   const fpsInstructions = document.querySelector(".fps-instructions");
@@ -310,8 +476,18 @@ function setViewMode(mode) {
     viewIndicator.textContent = mode.toUpperCase().replace("PERSON", " PERSON");
   }
 
+  // Gérer la minimap
+  if (minimapContainer) {
+    minimapContainer.style.display = mode === "firstperson" ? "block" : "none";
+  }
+
+  // Gérer la visibilité d'Arthur
+  if (arthurMesh) {
+    arthurMesh.visible = mode !== "firstperson";
+  }
+
   if (mode === "firstperson") {
-    camera.fov = 120;
+    camera.fov = 90;
     if (canvas) {
       canvas.style.cursor = "none";
       canvas.addEventListener("click", lockPointer);
@@ -359,13 +535,33 @@ function updateCameraForViewMode() {
       break;
 
     case "thirdperson":
-      camera.position.set(arthurPos.x - 3, arthurPos.y + 4, arthurPos.z + 3);
+      const distance = 5;
+      const height = 3;
+      const yaw = thirdPersonRotation.y;
+      const pitch = thirdPersonRotation.x;
+
+      const x = arthurPos.x + distance * Math.cos(pitch) * Math.sin(yaw);
+      const y = arthurPos.y + height + distance * Math.sin(pitch);
+      const z = arthurPos.z + distance * Math.cos(pitch) * Math.cos(yaw);
+
+      camera.position.set(x, y, z);
       camera.lookAt(arthurPos.x, arthurPos.y + 1, arthurPos.z);
       break;
 
     case "firstperson":
       camera.position.set(arthurPos.x, arthurPos.y + 1.6, arthurPos.z);
-      camera.rotation.set(cameraRotation.x, cameraRotation.y, 0);
+
+      // Rotation directe sans roll
+      const yawQuaternion = new THREE.Quaternion().setFromAxisAngle(
+        new THREE.Vector3(0, 1, 0),
+        cameraRotation.y
+      );
+      const pitchQuaternion = new THREE.Quaternion().setFromAxisAngle(
+        new THREE.Vector3(1, 0, 0),
+        cameraRotation.x
+      );
+
+      camera.quaternion.copy(yawQuaternion.multiply(pitchQuaternion));
       break;
   }
 }
@@ -399,48 +595,58 @@ function startMovement(direction) {
   let newX = arthurPosition3D.x;
   let newZ = arthurPosition3D.z;
 
+  // Orienter Arthur vers la direction de mouvement
+  orientArthurToDirection(direction);
+
+  // Calculer la nouvelle position selon la vue actuelle
   if (viewMode === "firstperson") {
+    // Mouvement basé sur l'orientation de la caméra en première personne
     const forward = new THREE.Vector3(0, 0, -1);
     const right = new THREE.Vector3(1, 0, 0);
 
-    forward.applyAxisAngle(new THREE.Vector3(0, 1, 0), cameraRotation.y);
-    right.applyAxisAngle(new THREE.Vector3(0, 1, 0), cameraRotation.y);
+    forward.applyQuaternion(camera.quaternion);
+    right.applyQuaternion(camera.quaternion);
+
+    forward.normalize();
+    right.normalize();
 
     switch (direction) {
       case "forward":
-        newX += Math.round(forward.x);
-        newZ += Math.round(forward.z);
+        newX = Math.round(arthurPosition3D.x + forward.x);
+        newZ = Math.round(arthurPosition3D.z + forward.z);
         break;
       case "backward":
-        newX -= Math.round(forward.x);
-        newZ -= Math.round(forward.z);
+        newX = Math.round(arthurPosition3D.x - forward.x);
+        newZ = Math.round(arthurPosition3D.z - forward.z);
         break;
       case "left":
-        newX -= Math.round(right.x);
-        newZ -= Math.round(right.z);
+        newX = Math.round(arthurPosition3D.x - right.x);
+        newZ = Math.round(arthurPosition3D.z - right.z);
         break;
       case "right":
-        newX += Math.round(right.x);
-        newZ += Math.round(right.z);
+        newX = Math.round(arthurPosition3D.x + right.x);
+        newZ = Math.round(arthurPosition3D.z + right.z);
         break;
     }
   } else {
+    // Mouvement classique pour les autres vues
     switch (direction) {
       case "forward":
-        newZ--;
+        newZ = arthurPosition3D.z - 1;
         break;
       case "backward":
-        newZ++;
+        newZ = arthurPosition3D.z + 1;
         break;
       case "left":
-        newX--;
+        newX = arthurPosition3D.x - 1;
         break;
       case "right":
-        newX++;
+        newX = arthurPosition3D.x + 1;
         break;
     }
   }
 
+  // Vérifier si la nouvelle position est valide
   if (
     newX >= 0 &&
     newX < mazeSize3D &&
@@ -448,14 +654,19 @@ function startMovement(direction) {
     newZ < mazeSize3D &&
     maze3D[newX][newZ] === 0
   ) {
-    isMoving = true;
     targetPosition3D = { x: newX, z: newZ };
+    isMoving = true;
     animateMovement();
   }
 }
 
 function animateMovement() {
-  if (!arthurMesh || !isMoving) return;
+  if (
+    !arthurMesh ||
+    !isMoving ||
+    arthurMesh.userData.model.userData?.isAnimating === false
+  )
+    return;
 
   const currentPos = arthurMesh.position;
   const targetWorldPos = {
@@ -488,9 +699,28 @@ function animateMovement() {
 // =============================================
 function setupEventListeners() {
   window.addEventListener("resize", onWindowResize);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "f") {
+      if (solutionMeshes.length > 0) {
+        clearSolution3D();
+        updateStatus("maze", "🧭 Solution masquée", "info");
+      } else {
+        solveMaze3D();
+      }
+    }
+    // Ajout pour la touche Espace
+    else if (e.key === " ") {
+      toggleArthurAnimation();
+    }
+  });
 
   document.addEventListener("keydown", (event) => {
     keys[event.code] = true;
+
+    // Changement de vue avec la touche G
+    if (event.code === "KeyG") {
+      cycleViewMode();
+    }
     event.preventDefault();
   });
 
@@ -506,15 +736,41 @@ function setupEventListeners() {
 
   document.addEventListener("mousemove", (event) => {
     if (isMouseLocked && viewMode === "firstperson") {
-      rotateCamera(event.movementX || 0, event.movementY || 0);
+      rotateFirstPersonCamera(event.movementX || 0, event.movementY || 0);
+    } else if (
+      viewMode === "thirdperson" &&
+      (event.buttons === 1 || event.buttons === 2)
+    ) {
+      rotateThirdPersonCamera(event.movementX || 0, event.movementY || 0);
     }
   });
+
+  // Rotation de la caméra en 3ème personne avec clic droit
+  const canvas = document.getElementById("maze3d-canvas");
+  if (canvas) {
+    canvas.addEventListener("mousedown", (event) => {
+      if (
+        viewMode === "thirdperson" &&
+        (event.button === 0 || event.button === 2)
+      ) {
+        canvas.style.cursor = "grabbing";
+      }
+    });
+
+    canvas.addEventListener("mouseup", () => {
+      if (viewMode === "thirdperson") {
+        canvas.style.cursor = "grab";
+      }
+    });
+
+    canvas.addEventListener("contextmenu", (event) => {
+      event.preventDefault();
+    });
+  }
 }
 
-function rotateCamera(deltaX, deltaY) {
-  if (viewMode !== "firstperson") return;
-
-  const sensitivity = 0.003;
+function rotateFirstPersonCamera(deltaX, deltaY) {
+  const sensitivity = 0.002;
 
   cameraRotation.y -= deltaX * sensitivity;
   cameraRotation.x -= deltaY * sensitivity;
@@ -526,10 +782,48 @@ function rotateCamera(deltaX, deltaY) {
   updateCameraForViewMode();
 }
 
+function rotateThirdPersonCamera(deltaX, deltaY) {
+  const sensitivity = 0.005;
+
+  thirdPersonRotation.y -= deltaX * sensitivity;
+  thirdPersonRotation.x -= deltaY * sensitivity;
+  thirdPersonRotation.x = Math.max(
+    -Math.PI / 3,
+    Math.min(Math.PI / 4, thirdPersonRotation.x)
+  );
+
+  updateCameraForViewMode();
+}
+
 function lockPointer() {
   const canvas = document.getElementById("maze3d-canvas");
   if (canvas && viewMode === "firstperson") {
     canvas.requestPointerLock();
+  }
+}
+function toggleArthurAnimation() {
+  if (!arthurMesh || !arthurMesh.userData.model) return;
+
+  const model = arthurMesh.userData.model;
+
+  // Vérifier si des animations sont en cours
+  if (model.userData?.isAnimating) {
+    // Arrêter toutes les animations
+    gsap.killTweensOf(model.rotation);
+    gsap.killTweensOf(model.position);
+
+    // Réinitialiser l'état
+    model.userData.isAnimating = false;
+    updateStatus("maze", "🛑 Animation d'Arthur arrêtée", "info");
+  } else {
+    // Reprendre les animations
+    model.userData.isAnimating = true;
+    updateStatus("maze", "▶️ Animation d'Arthur reprise", "info");
+
+    // Réappliquer l'animation de mouvement si nécessaire
+    if (isMoving) {
+      animateMovement();
+    }
   }
 }
 
@@ -545,30 +839,64 @@ function updateArthurPosition() {
 }
 
 // =============================================
-// Animation continue
+// Animation continue avec minimap
 // =============================================
 function animate3D() {
   requestAnimationFrame(animate3D);
 
   updateMovement();
+  animateSolution();
 
-  if (treasureGroup) {
-    treasureGroup.rotation.y += 0.02;
+  // Animation du coffre
+  if (treasureGroup && treasureGroup.userData.model) {
+    const model = treasureGroup.userData.model;
 
-    treasureGroup.children.forEach((child, index) => {
-      if (index > 2) {
+    // Rotation lente du coffre
+    model.rotation.y += 0.002;
+
+    // Indicateur visuel pour l'animation d'Arthur
+    if (arthurMesh && arthurMesh.userData.model) {
+      const model = arthurMesh.userData.model;
+      if (model.userData.isAnimating === false) {
+        // Ajouter un effet visuel pour indiquer que l'animation est arrêtée
+        // Par exemple, faire clignoter légèrement le modèle
+        const time = Date.now() * 0.005;
+        model.traverse(function (child) {
+          if (child.isMesh) {
+            child.material.emissiveIntensity = 0.5 + Math.sin(time) * 0.5;
+          }
+        });
+      }
+    }
+
+    // Animation des particules (si elles existent)
+    model.traverse(function (child) {
+      if (child.name.includes("gem") || child.name.includes("particle")) {
         const time = Date.now() * 0.003;
-        child.position.y = 0.6 + Math.sin(time + index * 0.5) * 0.1;
-        child.rotation.y = time * 2 + index;
+        child.position.y =
+          0.6 + Math.sin(time + parseFloat(child.userData?.delay || 0)) * 0.1;
+        child.rotation.y = time * 0.5 + parseFloat(child.userData?.delay || 0);
       }
     });
   }
 
+  // Rendu de la scène
   if (renderer && scene && camera) {
     renderer.render(scene, camera);
   }
+
+  // Rendu de la minimap en première personne
+  if (viewMode === "firstperson" && minimapRenderer && minimapCamera) {
+    minimapRenderer.render(scene, minimapCamera);
+  }
 }
 
+function cycleViewMode() {
+  const viewModes = ["topdown", "thirdperson", "firstperson"];
+  const currentIndex = viewModes.indexOf(viewMode);
+  const nextIndex = (currentIndex + 1) % viewModes.length;
+  setViewMode(viewModes[nextIndex]);
+}
 // =============================================
 // Génération du labyrinthe
 // =============================================
@@ -576,6 +904,16 @@ function generateMaze3D() {
   clearMaze3D();
   maze3D = generateMazeWithSolution();
   mazeSize3D = maze3D.length;
+
+  // Mettre à jour la caméra de la minimap
+  if (minimapCamera) {
+    minimapCamera.left = -mazeSize3D / 2;
+    minimapCamera.right = mazeSize3D / 2;
+    minimapCamera.top = mazeSize3D / 2;
+    minimapCamera.bottom = -mazeSize3D / 2;
+    minimapCamera.updateProjectionMatrix();
+  }
+
   buildMaze3D();
   createArthur();
   createTreasure();
@@ -636,7 +974,14 @@ function checkVictory() {
   const treasureX = mazeSize3D - 2;
   const treasureZ = mazeSize3D - 2;
 
-  if (arthurPosition3D.x === treasureX && arthurPosition3D.z === treasureZ) {
+  // Vérifier si Arthur est proche du trésor (ajustez la distance selon votre modèle)
+  const distance = Math.sqrt(
+    Math.pow(arthurPosition3D.x - treasureX, 2) +
+      Math.pow(arthurPosition3D.z - treasureZ, 2)
+  );
+
+  if (distance < 1.5) {
+    // Distance de détection
     updateStatus(
       "maze",
       "🏆 Félicitations ! Arthur a trouvé le trésor !",
@@ -685,7 +1030,7 @@ function createVictoryEffect() {
 }
 
 // =============================================
-// Résolution du labyrinthe
+// Résolution du labyrinthe avec chemin visible
 // =============================================
 function solveMaze3D() {
   clearSolution3D();
@@ -700,6 +1045,20 @@ function solveMaze3D() {
     updateStatus("maze", "🧭 Solution trouvée !", "success");
   }
 }
+
+// Modifiez la gestion de la touche F dans le document.addEventListener
+document.addEventListener("keydown", (e) => {
+  if (e.key === "f") {
+    if (solutionMeshes.length > 0) {
+      // Masquer la solution
+      clearSolution3D();
+      updateStatus("maze", "🧭 Solution masquée", "info");
+    } else {
+      // Afficher la solution
+      solveMaze3D();
+    }
+  }
+});
 
 function findPath3D(start, end) {
   const openSet = [start];
@@ -777,24 +1136,69 @@ function findPath3D(start, end) {
 }
 
 function displaySolution3D() {
+  // Chemin plus visible avec des sphères brillantes
   const solutionMaterial = new THREE.MeshPhongMaterial({
-    color: 0xffd700,
-    emissive: 0x332200,
+    color: 0xff4444,
+    emissive: 0x440000,
     transparent: true,
-    opacity: 0.8,
-    shininess: 100,
+    opacity: 0.9,
+    shininess: 150,
   });
-  const pathGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.1, 8);
+  const pathGeometry = new THREE.SphereGeometry(0.15, 12, 12);
 
-  for (let point of solutionPath3D) {
+  for (let i = 0; i < solutionPath3D.length; i++) {
+    const point = solutionPath3D[i];
     const pathMesh = new THREE.Mesh(pathGeometry, solutionMaterial);
     pathMesh.position.set(
       point.x - mazeSize3D / 2,
-      0.2,
+      0.3,
       point.y - mazeSize3D / 2
     );
+
+    // Animation pulsante pour rendre le chemin plus visible
+    const delay = i * 0.1;
+    pathMesh.userData = { delay, originalScale: 1 };
+
     scene.add(pathMesh);
     solutionMeshes.push(pathMesh);
+  }
+}
+
+// =============================================
+// Orientation d'Arthur vers la direction de mouvement
+// =============================================
+// Remplacez la fonction orientArthurToDirection par cette version
+function orientArthurToDirection(direction) {
+  if (!arthurMesh || !arthurMesh.userData.model) return;
+
+  // Si l'animation est arrêtée, ne rien faire
+  if (arthurMesh.userData.model.userData?.isAnimating === false) return;
+
+  let targetRotation = 0;
+
+  switch (direction) {
+    case "forward":
+      targetRotation = 0; // Face au nord
+      break;
+    case "backward":
+      targetRotation = Math.PI; // Face au sud
+      break;
+    case "left":
+      targetRotation = Math.PI / 2; // Face à l'ouest
+      break;
+    case "right":
+      targetRotation = -Math.PI / 2; // Face à l'est
+      break;
+  }
+
+  // Animation fluide de rotation
+  const model = arthurMesh.userData.model;
+  if (model) {
+    gsap.to(model.rotation, {
+      y: targetRotation,
+      duration: 0.3,
+      ease: "power2.out",
+    });
   }
 }
 
@@ -835,6 +1239,8 @@ function resetMaze3D() {
   arthurPosition3D = { x: 1, z: 1 };
   targetPosition3D = { x: 1, z: 1 };
   isMoving = false;
+  cameraRotation = { x: 0, y: 0 };
+  thirdPersonRotation = { x: 0, y: 0 };
   updateArthurPosition();
   updateStatus("maze", "🔄 Labyrinthe réinitialisé.", "info");
 }
@@ -869,6 +1275,50 @@ function onWindowResize() {
     renderer.setSize(container.offsetWidth, container.offsetHeight);
   }
 }
+
+// Animation du chemin de solution avec pulsation
+function animateSolution() {
+  if (solutionMeshes.length > 0) {
+    const time = Date.now() * 0.005;
+    solutionMeshes.forEach((mesh, index) => {
+      if (mesh.userData) {
+        const wave = Math.sin(time + mesh.userData.delay) * 0.3 + 1;
+        mesh.scale.setScalar(wave);
+        mesh.material.emissiveIntensity = wave * 0.3;
+      }
+    });
+  }
+}
+
+// Mettre à jour la boucle d'animation pour inclure l'animation de solution
+const originalAnimate3D = animate3D;
+animate3D = function () {
+  requestAnimationFrame(animate3D);
+
+  updateMovement();
+  animateSolution();
+
+  if (treasureGroup) {
+    treasureGroup.rotation.y += 0.02;
+
+    treasureGroup.children.forEach((child, index) => {
+      if (index > 2) {
+        const time = Date.now() * 0.003;
+        child.position.y = 0.6 + Math.sin(time + index * 0.5) * 0.1;
+        child.rotation.y = time * 2 + index;
+      }
+    });
+  }
+
+  if (renderer && scene && camera) {
+    renderer.render(scene, camera);
+  }
+
+  // Rendu de la minimap en première personne
+  if (viewMode === "firstperson" && minimapRenderer && minimapCamera) {
+    minimapRenderer.render(scene, minimapCamera);
+  }
+};
 
 // =============================================
 // Fonctions d'interface
