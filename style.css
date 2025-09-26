@@ -902,3 +902,12 @@ body::before {
     transition-duration: 0.01ms !important;
   }
 }
+.icon {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+.icon img {
+  width: 30px;
+  height: auto;
+}

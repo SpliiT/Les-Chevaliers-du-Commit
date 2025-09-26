@@ -1,0 +1,457 @@
+{
+  "mapSettings": {
+    "center": [
+      43.3028,
+      -0.3600404938953455
+    ],
+    "zoom": 14,
+    "tileLayers": [
+      {
+        "name": "Thunderforest Pioneer",
+        "url": "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
+        "attribution": "© OpenStreetMap contributors",
+        "maxZoom": 17,
+        "minZoom": 3
+      },
+      {
+        "name": "CartoDB Voyager",
+        "url": "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+        "attribution": "© CARTO © OpenStreetMap contributors",
+        "maxZoom": 17,
+        "minZoom": 3
+      }
+    ]
+  },
+  "mainLocations": [
+    {
+      "id": "kaamelott",
+      "name": "Kaamelott",
+      "description": "Fabrique Numérique Paloise, Pau",
+      "coords": [
+        43.30895117678526,
+        -0.360458904016527
+      ],
+      "icon": {
+        "html": "<div style=\"background: linear-gradient(45deg, #32CD32, #228B22); border: 3px solid #FFD700; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 0 15px rgba(50, 205, 50, 0.7);\">🏰</div>",
+        "iconSize": [
+          40,
+          40
+        ],
+        "iconAnchor": [
+          20,
+          20
+        ],
+        "popupAnchor": [
+          0,
+          -20
+        ],
+        "className": "custom-marker"
+      },
+      "popupContent": "<div style=\"text-align: center;\"><h3><span class='icon'><img src'./img/chateau.png' alt='chateau'></span> Kaamelott</h3><p><strong>Fabrique Numérique Paloise</strong></p><p>Point de départ de la quête</p><p><em>Coords: {lat}, {lng}</em></p></div>"
+    },
+    {
+      "id": "labyrinth",
+      "name": "Entrée du Labyrinthe",
+      "description": "Château de Pau",
+      "coords": [
+        43.294821254409726,
+        -0.3755785831268032
+      ],
+      "icon": {
+        "html": "<div style=\"background: linear-gradient(45deg, #FF6B6B, #FF4444); border: 3px solid #FFD700; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 0 15px rgba(255, 107, 107, 0.7);\">🌀</div>",
+        "iconSize": [
+          40,
+          40
+        ],
+        "iconAnchor": [
+          20,
+          20
+        ],
+        "popupAnchor": [
+          0,
+          -20
+        ],
+        "className": "custom-marker"
+      },
+      "popupContent": "<div style=\"text-align: center;\"><h3><span class='icon'><img src'./img/labyrinthe.png' alt='labyrinthe'></span> Entrée du Labyrinthe</h3><p><strong>Château de Pau</strong></p><p>Destination finale</p><p><em>Coords: {lat}, {lng}</em></p></div>"
+    }
+  ],
+  "waypoints": [
+    {
+      "id": "pointA",
+      "name": "Centre Commercial TEMPO",
+      "coords": [
+        43.316888267018946,
+        -0.3583800310028593
+      ],
+      "emoji": "🛍️",
+      "icon": {
+        "html": "<div style=\"background: linear-gradient(45deg, #FF69B4, #FF1493); border: 3px solid #DB7093; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 0 12px rgba(255, 105, 180, 0.7);\">🛍️</div>",
+        "iconSize": [
+          35,
+          35
+        ],
+        "iconAnchor": [
+          17,
+          17
+        ],
+        "popupAnchor": [
+          0,
+          -17
+        ],
+        "className": "custom-marker"
+      },
+      "popupContent": "<div style=\"text-align: center;\"><h4><span class='icon'><img src'./img/centrecommercial.png' alt='centre commercial'></span> Centre Commercial TEMPO</h4><p>Point de passage #{index}</p><p><em>Coords: {lat}, {lng}</em></p></div>"
+    },
+    {
+      "id": "pointB",
+      "name": "Musée des beaux-arts de Pau",
+      "coords": [
+        43.29783766394127,
+        -0.3645200481947958
+      ],
+      "emoji": "🎨",
+      "icon": {
+        "html": "<div style=\"background: linear-gradient(45deg, #4169E1, #0000CD); border: 3px solid #8A2BE2; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 0 12px rgba(65, 105, 225, 0.7);\">🎨</div>",
+        "iconSize": [
+          35,
+          35
+        ],
+        "iconAnchor": [
+          17,
+          17
+        ],
+        "popupAnchor": [
+          0,
+          -17
+        ],
+        "className": "custom-marker"
+      },
+      "popupContent": "<div style=\"text-align: center;\"><h4><span class='icon'><img src'./img/musee.png' alt='musee'></span>  Musée des beaux-arts de Pau</h4><p>Point de passage #{index}</p><p><em>Coords: {lat}, {lng}</em></p></div>"
+    },
+    {
+      "id": "pointD",
+      "name": "Funiculaire de Pau",
+      "coords": [
+        43.287366348719495,
+        -0.36961914937342916
+      ],
+      "emoji": "🚡",
+      "icon": {
+        "html": "<div style=\"background: linear-gradient(45deg, #87CEEB, #4682B4); border: 3px solid #5F9EA0; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 0 12px rgba(135, 206, 235, 0.7);\">🚡</div>",
+        "iconSize": [
+          35,
+          35
+        ],
+        "iconAnchor": [
+          17,
+          17
+        ],
+        "popupAnchor": [
+          0,
+          -17
+        ],
+        "className": "custom-marker"
+      },
+      "popupContent": "<div style=\"text-align: center;\"><h4>🚡 Funiculaire de Pau</h4><p>Point de passage #{index}</p><p><em>Coords: {lat}, {lng}</em></p></div>"
+    },
+    {
+      "id": "pointE",
+      "name": "Parc Aquasports - Stade d'Eaux Vives",
+      "coords": [
+        43.29295704959184,
+        -0.35868335536781504
+      ],
+      "emoji": "🏄",
+      "icon": {
+        "html": "<div style=\"background: linear-gradient(45deg, #1E90FF, #00BFFF); border: 3px solid #4682B4; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 0 12px rgba(30, 144, 255, 0.7);\">🏄</div>",
+        "iconSize": [
+          35,
+          35
+        ],
+        "iconAnchor": [
+          17,
+          17
+        ],
+        "popupAnchor": [
+          0,
+          -17
+        ],
+        "className": "custom-marker"
+      },
+      "popupContent": "<div style=\"text-align: center;\"><h4><span class='icon'><img src'./img/toboggan.png' alt='toboggan aquatique'></span>  Parc Aquasports - Stade d'Eaux Vives</h4><p>Point de passage #{index}</p><p><em>Coords: {lat}, {lng}</em></p></div>"
+    },
+    {
+      "id": "pointF",
+      "name": "Parc des Expositions de Pau",
+      "coords": [
+        43.30578006552842,
+        -0.3773566424841697
+      ],
+      "emoji": "🏟️",
+      "icon": {
+        "html": "<div style=\"background: linear-gradient(45deg, #FF8C00, #FF7F50); border: 3px solid #FFA500; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 0 12px rgba(255, 140, 0, 0.7);\">🏟️</div>",
+        "iconSize": [
+          35,
+          35
+        ],
+        "iconAnchor": [
+          17,
+          17
+        ],
+        "popupAnchor": [
+          0,
+          -17
+        ],
+        "className": "custom-marker"
+      },
+      "popupContent": "<div style=\"text-align: center;\"><h4><span class='icon'><img src'./img/exposition.png' alt='exposition'></span>  Parc des Expositions de Pau</h4><p>Point de passage #{index}</p><p><em>Coords: {lat}, {lng}</em></p></div>"
+    },
+    {
+      "id": "pointG",
+      "name": "Square d'Étigny",
+      "coords": [
+        43.29761859612618,
+        -0.386993449527646
+      ],
+      "emoji": "🌿",
+      "icon": {
+        "html": "<div style=\"background: linear-gradient(45deg, #32CD32, #228B22); border: 3px solid #2E8B57; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 0 12px rgba(50, 205, 50, 0.7);\">🌿</div>",
+        "iconSize": [
+          35,
+          35
+        ],
+        "iconAnchor": [
+          17,
+          17
+        ],
+        "popupAnchor": [
+          0,
+          -17
+        ],
+        "className": "custom-marker"
+      },
+      "popupContent": "<div style=\"text-align: center;\"><h4><span class='icon'><img src'./img/parc.png' alt='parc naturel'></span>  Square d'Étigny</h4><p>Point de passage #{index}</p><p><em>Coords: {lat}, {lng}</em></p></div>"
+    },
+    {
+      "id": "pointH",
+      "name": "Polyclinique Pau Pyrénées - Site Marzet",
+      "coords": [
+        43.304332496798814,
+        -0.36511401960534007
+      ],
+      "emoji": "🏥",
+      "icon": {
+        "html": "<div style=\"background: linear-gradient(45deg, #FF6347, #FF4500); border: 3px solid #FF8C00; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 0 12px rgba(255, 99, 71, 0.7);\">🏥</div>",
+        "iconSize": [
+          35,
+          35
+        ],
+        "iconAnchor": [
+          17,
+          17
+        ],
+        "popupAnchor": [
+          0,
+          -17
+        ],
+        "className": "custom-marker"
+      },
+      "popupContent": "<div style=\"text-align: center;\"><h4><span class='icon'><img src'./img/polyclinique.png' alt='polyclinique'></span>  Polyclinique Pau Pyrénées - Site Marzet</h4><p>Point de passage #{index}</p><p><em>Coords: {lat}, {lng}</em></p></div>"
+    },
+    {
+      "id": "pointI",
+      "name": "Halles de Pau",
+      "coords": [
+        43.29991919803865,
+        -0.3689420009388915
+      ],
+      "emoji": "🛒",
+      "icon": {
+        "html": "<div style=\"background: linear-gradient(45deg, #FFD700, #FFA500); border: 3px solid #DAA520; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 0 12px rgba(255, 215, 0, 0.7);\">🛒</div>",
+        "iconSize": [
+          35,
+          35
+        ],
+        "iconAnchor": [
+          17,
+          17
+        ],
+        "popupAnchor": [
+          0,
+          -17
+        ],
+        "className": "custom-marker"
+      },
+      "popupContent": "<div style=\"text-align: center;\"><h4><span class='icon'><img src'./img/marche.png' alt='marché'></span> Halles de Pau</h4><p>Point de passage #{index}</p><p><em>Coords: {lat}, {lng}</em></p></div>"
+    },
+    {
+      "id": "pointJ",
+      "name": "Cinéma Le Méliès",
+      "coords": [
+        43.30346745681367,
+        -0.37015083722593956
+      ],
+      "emoji": "🎬",
+      "icon": {
+        "html": "<div style=\"background: linear-gradient(45deg, #8B0000, #B22222); border: 3px solid #CD5C5C; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 0 12px rgba(139, 0, 0, 0.7);\">🎬</div>",
+        "iconSize": [
+          35,
+          35
+        ],
+        "iconAnchor": [
+          17,
+          17
+        ],
+        "popupAnchor": [
+          0,
+          -17
+        ],
+        "className": "custom-marker"
+      },
+      "popupContent": "<div style=\"text-align: center;\"><h4><span class='icon'><img src'./img/cinema.png' alt='Clap de film'></span> Cinéma Le Méliès</h4><p>Point de passage #{index}</p><p><em>Coords: {lat}, {lng}</em></p></div>"
+    },
+    {
+      "id": "pointK",
+      "name": "CINÉMA CGR Pau Saint Louis",
+      "coords": [
+        43.29592419071126,
+        -0.3701274601218625
+      ],
+      "emoji": "🎥",
+      "icon": {
+        "html": "<div style=\"background: linear-gradient(45deg, #4B0082, #800080); border: 3px solid #9400D3; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 0 12px rgba(75, 0, 130, 0.7);\">🎥</div>",
+        "iconSize": [
+          35,
+          35
+        ],
+        "iconAnchor": [
+          17,
+          17
+        ],
+        "popupAnchor": [
+          0,
+          -17
+        ],
+        "className": "custom-marker"
+      },
+      "popupContent": "<div style=\"text-align: center;\"><h4> <span class='icon'><img src'./img/cinema.png' alt='clap de film'></span>   CINÉMA CGR Pau Saint Louis</h4><p>Point de passage #{index}</p><p><em>Coords: {lat}, {lng}</em></p></div>"
+    },
+    {
+      "id": "pointL",
+      "name": "Stade des champs",
+      "coords": [
+        43.2987645293873,
+        -0.4033938792716871
+      ],
+      "emoji": "⚽",
+      "icon": {
+        "html": "<div style=\"background: linear-gradient(45deg, #228B22, #006400); border: 3px solid #32CD32; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 0 12px rgba(34, 139, 34, 0.7);\">⚽</div>",
+        "iconSize": [
+          35,
+          35
+        ],
+        "iconAnchor": [
+          17,
+          17
+        ],
+        "popupAnchor": [
+          0,
+          -17
+        ],
+        "className": "custom-marker"
+      },
+      "popupContent": "<div style=\"text-align: center;\"><h4>⚽ Stade des champs</h4><p>Point de passage #{index}</p><p><em>Coords: {lat}, {lng}</em></p></div>"
+    },
+    {
+      "id": "pointM",
+      "name": "Les Jardins du Lacaou",
+      "coords": [
+        43.31157503395756,
+        -0.39153670896736326
+      ],
+      "emoji": "🌺",
+      "icon": {
+        "html": "<div style=\"background: linear-gradient(45deg, #FF69B4, #FF1493); border: 3px solid #C71585; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 0 12px rgba(255, 105, 180, 0.7);\">🌺</div>",
+        "iconSize": [
+          35,
+          35
+        ],
+        "iconAnchor": [
+          17,
+          17
+        ],
+        "popupAnchor": [
+          0,
+          -17
+        ],
+        "className": "custom-marker"
+      },
+      "popupContent": "<div style=\"text-align: center;\"><h4> <span class='icon'><img src'./img/fleurs.png' alt='jardin avec des fleurs'></span> Les Jardins du Lacaou</h4><p>Point de passage #{index}</p><p><em>Coords: {lat}, {lng}</em></p></div>"
+    },
+    {
+      "id": "pointN",
+      "name": "Hippodrome du Pont-Long",
+      "coords": [
+        43.33480384771862,
+        -0.373963655335701
+      ],
+      "emoji": "🏇",
+      "icon": {
+        "html": "<div style=\"background: linear-gradient(45deg, #8B4513, #A0522D); border: 3px solid #CD853F; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 0 12px rgba(139, 69, 19, 0.7);\">🏇</div>",
+        "iconSize": [
+          35,
+          35
+        ],
+        "iconAnchor": [
+          17,
+          17
+        ],
+        "popupAnchor": [
+          0,
+          -17
+        ],
+        "className": "custom-marker"
+      },
+      "popupContent": "<div style=\"text-align: center;\"><h4><span class='icon'><img src'./img/hippodrome.png' alt='Hippodrome'></span> Hippodrome du Pont-Long</h4><p>Point de passage #{index}</p><p><em>Coords: {lat}, {lng}</em></p></div>"
+    },
+    {
+      "id": "pointO",
+      "name": "Passage chez Tao",
+      "coords": [
+        43.30319457780438,
+        -0.3653257886747326
+      ],
+      "emoji": "🏠",
+      "icon": {
+        "html": "<div style=\"background: linear-gradient(45deg, #48D1CC, #00CED1); border: 3px solid #20B2AA; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 0 12px rgba(72, 209, 204, 0.7);\">🏠</div>",
+        "iconSize": [
+          35,
+          35
+        ],
+        "iconAnchor": [
+          17,
+          17
+        ],
+        "popupAnchor": [
+          0,
+          -17
+        ],
+        "className": "custom-marker"
+      },
+      "popupContent": "<div style=\"text-align: center;\"><h4><span class='icon'><img src'./img/maison.png' alt='maison'></span> Passage chez Tao</h4><p>Point de passage #{index}</p><p><em>Coords: {lat}, {lng}</em></p></div>"
+    }
+  ],
+  "mazeSettings": {
+    "size": 21,
+    "start": {
+      "x": 1,
+      "y": 1
+    },
+    "end": {
+      "x": 19,
+      "y": 19
+    },
+    "cellSize": "25px"
+  }
+}
